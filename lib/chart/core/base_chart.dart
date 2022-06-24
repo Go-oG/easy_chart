@@ -1,36 +1,31 @@
-import 'package:easy_chart/chart/component/axis_view.dart';
+import 'package:easy_chart/chart/component/axis/axis_manager.dart';
 import 'package:easy_chart/chart/options/animation.dart';
+import 'package:easy_chart/chart/options/axis.dart';
 import 'package:easy_chart/chart/options/base_config.dart';
 import 'package:easy_chart/chart/options/legend.dart';
 import 'package:easy_chart/chart/options/style.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-
 import 'package:easy_chart/chart/options/title.dart' as chart;
-import 'package:easy_chart/chart/options/axis.dart' as chart;
-
 import 'data_group.dart';
 import 'gesture.dart';
 
-abstract class BaseChart<C extends BaseConfig, D extends DataGroup> extends StatefulWidget {
-  final C config;
+class Chart<D extends DataGroup> extends StatefulWidget {
+  final ChartConfig config;
+  final List<BaseRender> renderList;
 
-  const BaseChart(this.config, {Key? key}) : super(key: key);
+  const Chart(this.config, this.renderList, {Key? key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
-    return BaseChartState<C, D>();
+    return ChartState<D>();
   }
-
-  BaseChartRender<C,D> obtainRender(C config, Animation<double>? animation);
 }
 
-class BaseChartState<C extends BaseConfig, D extends DataGroup> extends State<BaseChart<C, D>> with TickerProviderStateMixin {
-  late final BaseChartRender render;
+class ChartState<D extends DataGroup> extends State<Chart<D>> with TickerProviderStateMixin {
+  late final MultiRender render;
   late AnimationController? _animationController;
   late Animation<double>? _animation;
-
-  BaseChartState();
 
   @override
   void initState() {
@@ -44,12 +39,17 @@ class BaseChartState<C extends BaseConfig, D extends DataGroup> extends State<Ba
       );
     }
 
-    render = widget.obtainRender(widget.config, _animation);
+    //注入动画
+    for (var element in widget.renderList) {
+      element._animation = element.obtainAnimation(this);
+    }
+
+    render = MultiRender(widget.renderList, animation: _animation);
   }
 
   @override
   Widget build(BuildContext context) {
-    BaseConfig config = widget.config;
+    ChartConfig config = widget.config;
     List<Widget> wl = [];
     chart.ChartTitle? title = config.title;
     Legend? legend = config.legend;
@@ -270,7 +270,7 @@ class BaseChartState<C extends BaseConfig, D extends DataGroup> extends State<Ba
     );
   }
 
-  Widget _buildPainter(BaseConfig config) {
+  Widget _buildPainter(ChartConfig config) {
     GestureTapDownCallback? onTapDown = render.onTapDown;
     GestureTapUpCallback? onTapUp = render.onTapUp;
     GestureTapCallback? onTap = render.onTap;
@@ -394,36 +394,46 @@ class BaseChartState<C extends BaseConfig, D extends DataGroup> extends State<Ba
   }
 }
 
-/// 适用笛卡尔坐标系下的Chart基类
-abstract class BaseChartRender<C extends BaseConfig, D extends DataGroup> extends ChangeNotifier
-    with GestureListener
-    implements CustomPainter {
-  final C config;
-  final List<D> dataList;
-  final Animation<double>? animation;
-  late AxisView axisView;
+/// 渲染的基类，支持多个Render 同时渲染
+class MultiRender extends ChangeNotifier with GestureListener implements CustomPainter {
+  final Animation<double>? animation; //全局
+  final List<BaseRender> renderList;
 
   //记录图表占用区域的范围
   Rect chartRect = const Rect.fromLTRB(0, 0, 0, 0);
 
-  BaseChartRender(this.config, this.dataList, {this.animation}) {
+  MultiRender(this.renderList, {this.animation}) {
     if (animation != null) {
       animation?.addListener(() {
         notifyListeners();
       });
     }
-    axisView = AxisView(config);
+
+    for (var element in renderList) {
+      element._refresh = updateUI;
+      element.onInit();
+    }
   }
 
   @override
   void paint(Canvas canvas, Size size) {
-    onDraw(canvas, size);
+    //先测量 获取各个Render的尺寸信息
+    for (var element in renderList) {
+      element.onMeasure(size);
+    }
+    //再绘制
+    for (var element in renderList) {
+      element.onDraw(canvas);
+    }
   }
-
-  void onDraw(Canvas canvas, Size size);
 
   @override
   bool? hitTest(Offset position) {
+    for (var element in renderList) {
+      if (element.hitTest(position)) {
+        return true;
+      }
+    }
     return false;
   }
 
@@ -437,31 +447,67 @@ abstract class BaseChartRender<C extends BaseConfig, D extends DataGroup> extend
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return true;
+    for (var element in renderList) {
+      if (element.shouldRepaint()) {
+        return true;
+      }
+    }
+    return false;
   }
 
   void updateUI() {
     notifyListeners();
   }
+}
 
-  ///获取可用的坐标轴数量
-  List<chart.Axis> getCanUseXAxis() {
-    List<chart.Axis> list = [];
-    for (var element in config.xAxis) {
-      if (element.show) {
-        list.add(element);
-      }
-    }
-    return list;
+/// 图表渲染器，负责整个视图的渲染
+/// 由于单独的一个Render占据整个画布，因此没有布局时是占满整个区域的，因此没有onLayout 方法
+/// 整个Render 包含坐标轴和图表区
+
+abstract class BaseRender with GestureListener {
+  VoidCallback? _refresh;
+  late Size canvasSize;
+  late AxisManager axisManager; //坐标轴管理工具
+  Animation<double>? _animation;
+
+
+  @mustCallSuper
+  void onInit() {
+    _animation?.addListener(updateUI);
+    axisManager=AxisManager();
   }
 
-  List<chart.Axis> getCanUseYAxis() {
-    List<chart.Axis> list = [];
-    for (var element in config.yAxis) {
-      if (element.show) {
-        list.add(element);
-      }
-    }
-    return list;
+  Animation<double>? obtainAnimation(TickerProvider vsync) {
+    return null;
+  }
+
+  @mustCallSuper
+  void onMeasure(Size canvasSize) {
+    this.canvasSize = canvasSize;
+  }
+
+  void onDraw(Canvas canvas);
+
+  void updateUI() {
+    _refresh?.call();
+  }
+
+  bool hitTest(Offset position) {
+    return false;
+  }
+
+  bool shouldRepaint() {
+    return true;
+  }
+}
+
+/// 适用于二维笛卡尔坐标系的简单渲染器
+class SimpleRender<C extends BaseAxis, D extends DataGroup> extends BaseRender {
+  @override
+  void onDraw(Canvas canvas) {}
+
+  @override
+  void onMeasure(Size canvasSize) {
+    super.onMeasure(canvasSize);
   }
 }

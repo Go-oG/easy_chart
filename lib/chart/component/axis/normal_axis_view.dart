@@ -1,46 +1,56 @@
+import 'package:easy_chart/chart/component/axis/base_axis_view.dart';
 import 'package:easy_chart/chart/core/data_group.dart';
 import 'package:easy_chart/chart/functions.dart';
+import 'package:easy_chart/chart/options/axis.dart';
 import 'package:easy_chart/chart/options/axis_line.dart';
-import 'package:easy_chart/chart/options/base_config.dart';
 import 'package:easy_chart/chart/options/axis.dart' as chart;
 import 'package:easy_chart/chart/options/style.dart';
 import 'package:flutter/material.dart';
 
-class AxisView {
-  BaseConfig config;
-  late List<DataGroup> dataGroupList; // 存放全部的数据
+class AxisView extends BaseAxisView {
+  late List<DataGroup> dataGroupList;
 
-  AxisView(this.config) {
-    //校验坐标轴ID是否唯一
+  AxisView(super.mainAxis, super.crossAxis, this.dataGroupList) {
     checkAxisIdUnique();
   }
 
-  Size windowSize = Size.zero;
-  Rect chartBoundRect = Rect.zero;
-
-  ///这两个不会影响坐标轴线的绘制，只会影响相关的Tick和MinorTick以及显示的区域数据
-  double scaleRatio = 1; //缩放因子
-  Offset scrollOffset = Offset.zero; // 滚动的偏移量
-
-  Map<String, Rect> axisSizeMap = {}; //存储每个坐标轴的位置
+  //存储每个坐标轴的位置
+  Map<String, Rect> axisSizeMap = {};
 
   // 存储x轴和y轴占用的各方向大小
   late List<double> xAxisAreaSize;
   late List<double> yAxisAreaSize;
   bool layoutFlag = false;
 
-  //必须先调用 layout 然后再调用drawAxis;
-  void layout(Size size, double newScaleRatio, Offset newScrollOffset, List<DataGroup> dataGroupList) {
+  @override
+  List<DataPosition> computeViewportData(List<DataPoint> list) {
+    return [];
+  }
+
+  @override
+  Size getCrossAxisArea() {
+    return Size.zero;
+  }
+
+  @override
+  Size getMainAxisArea() {
+    return Size.zero;
+  }
+
+  @override
+  AxisType getType() {
+    return AxisType.normal;
+  }
+
+  @override
+  void onMeasure(Size canvasSize) {
+    super.onMeasure(canvasSize);
     layoutFlag = true;
-    this.dataGroupList = dataGroupList;
-    windowSize = Size.copy(size);
-    scaleRatio = newScaleRatio;
-    scrollOffset = newScrollOffset;
 
     //布局计算开始
     Map<String, double> sizeMap = computeAxisSingleSize();
-    List<chart.Axis> xAxis = getCanUseXAxis();
-    List<chart.Axis> yAxis = getCanUseYAxis();
+    List<chart.BaseAxis> xAxis = [mainAxis];
+    List<chart.BaseAxis> yAxis = [crossAxis];
 
     //计算所有的X轴累加高度
     xAxisAreaSize = computeAxisXBounds(xAxis, sizeMap);
@@ -52,15 +62,16 @@ class AxisView {
     axisSizeMap.addAll(computeAxisYPosition(yAxis, sizeMap, xAxisAreaSize[1], xAxisAreaSize[2]));
 
     //计算图表区的React区域
-    double left = yAxisAreaSize[1] + 1;
-    double top = xAxisAreaSize[1] - 1;
-    double right = size.width - yAxisAreaSize[2] + 1;
-    double bottom = size.height - xAxisAreaSize[2] + 1;
-    chartBoundRect = Rect.fromLTRB(left, top, right, bottom);
+    // double left = yAxisAreaSize[1] + 1;
+    // double top = xAxisAreaSize[1] - 1;
+    // double right = canvasSize.width - yAxisAreaSize[2] + 1;
+    // double bottom = canvasSize.height - xAxisAreaSize[2] + 1;
+    // chartBoundRect = Rect.fromLTRB(left, top, right, bottom);
   }
 
-  // 开始绘制
-  void drawAxis(Canvas canvas) {
+  @override
+  void onDraw(Canvas canvas) {
+    super.onDraw(canvas);
     if (!layoutFlag) {
       throw Exception('you must first call layout');
     }
@@ -69,19 +80,19 @@ class AxisView {
     paint.color = Colors.blue;
     paint.style = PaintingStyle.fill;
     paint.strokeWidth = 5;
-    canvas.drawCircle(Offset(windowSize.width / 2, windowSize.height / 2), 30, paint);
+    canvas.drawCircle(Offset(canvasSize.width / 2, canvasSize.height / 2), 30, paint);
 
-    List<chart.Axis> xAxis = getCanUseXAxis();
-    List<chart.Axis> yAxis = getCanUseYAxis();
+    List<chart.BaseAxis> xAxis = [mainAxis];
+    List<chart.BaseAxis> yAxis = [crossAxis];
 
     for (var element in yAxis) {
       Rect rect = axisSizeMap[element.id]!;
-      _drawAxisLine(canvas, true, element, rect);
+      _drawAxisLine(canvas, true, element as chart.Axis, rect);
     }
 
     for (var element in xAxis) {
       Rect rect = axisSizeMap[element.id]!;
-      _drawAxisLine(canvas, false, element, rect);
+      _drawAxisLine(canvas, false, element as chart.Axis, rect);
     }
   }
 
@@ -140,19 +151,8 @@ class AxisView {
 
   // 检查坐标轴的ID
   void checkAxisIdUnique() {
-    Set<String> idSet = <String>{};
-    for (var element in config.xAxis) {
-      if (idSet.contains(element.id)) {
-        throw Exception("坐标轴的ID应全局唯一");
-      }
-      idSet.add(element.id);
-    }
-
-    for (var element in config.yAxis) {
-      if (idSet.contains(element.id)) {
-        throw Exception("坐标轴的ID应全局唯一");
-      }
-      idSet.add(element.id);
+    if (mainAxis.id == crossAxis.id) {
+      throw Exception("坐标轴的ID应全局唯一");
     }
   }
 
@@ -165,47 +165,52 @@ class AxisView {
       yAxisMap[element.yAxisId] = element;
       xAxisMap[element.xAxisId] = element;
     }
-    for (var element in config.xAxis) {
-      if (!element.show) {
+
+    for (var element in [mainAxis]) {
+      chart.Axis axis = element as chart.Axis;
+
+      if (!axis.show) {
         axisSizeMap[element.id] = 0;
         continue;
       }
-      if (element.width != null && element.width! > 0) {
-        axisSizeMap[element.id] = element.width!;
+
+      if (axis.width != null && axis.width! > 0) {
+        axisSizeMap[axis.id] = axis.width!;
         continue;
       }
-      DataGroup? group = xAxisMap[element.id];
-      String s = findMaxLengthLabel(group?.dataList, false, formatter: element.axisLabel.label.formatter);
-      Size textSize = computeTextSize(s, element.axisLabel.label.textStyle, windowSize.width);
-      axisSizeMap[element.id] = computeAxisWidth(element, false, textSize);
+      DataGroup? group = xAxisMap[axis.id];
+      String s = findMaxLengthLabel(group?.dataList, false, formatter: axis.axisLabel.label.formatter);
+      Size textSize = computeTextSize(s, axis.axisLabel.label.textStyle, canvasSize.width);
+      axisSizeMap[axis.id] = computeAxisWidth(axis, false, textSize);
     }
 
-    for (var element in config.yAxis) {
-      if (!element.show) {
-        axisSizeMap[element.id] = 0;
+    for (var element in [crossAxis]) {
+      chart.Axis axis = element as chart.Axis;
+
+      if (!axis.show) {
+        axisSizeMap[axis.id] = 0;
         continue;
       }
-      if (element.width != null && element.width! > 0) {
-        axisSizeMap[element.id] = element.width!;
+      if (axis.width != null && axis.width! > 0) {
+        axisSizeMap[axis.id] = axis.width!;
         continue;
       }
-      DataGroup? group = yAxisMap[element.id];
-      String s = findMaxLengthLabel(group?.dataList, true, formatter: element.axisLabel.label.formatter);
-      Size textSize = computeTextSize(s, element.axisLabel.label.textStyle, windowSize.height);
-      axisSizeMap[element.id] = computeAxisWidth(element, true, textSize);
+      DataGroup? group = yAxisMap[axis.id];
+      String s = findMaxLengthLabel(group?.dataList, true, formatter: axis.axisLabel.label.formatter);
+      Size textSize = computeTextSize(s, axis.axisLabel.label.textStyle, canvasSize.height);
+      axisSizeMap[axis.id] = computeAxisWidth(axis, true, textSize);
     }
     return axisSizeMap;
   }
 
   Map<String, Rect> computeAxisYPosition(
-    List<chart.Axis> axisList,
+    List<chart.BaseAxis> axisList,
     Map<String, double> sizeMap,
     double top,
     double bottom,
   ) {
-    double height = windowSize.height - bottom - top;
+    double height = canvasSize.height - bottom - top;
     Map<String, Rect> map = {};
-
     //先计算左边的
     double left = 0;
     for (var axis in axisList) {
@@ -219,14 +224,14 @@ class AxisView {
       left += width;
     }
     // 再计算右边的
-    List<chart.Axis> rightAxis = [];
+    List<chart.BaseAxis> rightAxis = [];
     for (var axis in axisList) {
       if (axis.position == Position.right) {
         rightAxis.add(axis);
       }
     }
 
-    double right = windowSize.width;
+    double right = canvasSize.width;
     for (var axis in rightAxis.reversed) {
       double width = sizeMap[axis.id]!;
       Rect rect = Rect.fromLTRB(right - width, top, right, height);
@@ -238,12 +243,12 @@ class AxisView {
   }
 
   Map<String, Rect> computeAxisXPosition(
-    List<chart.Axis> axisList,
+    List<chart.BaseAxis> axisList,
     Map<String, double> sizeMap,
     double left,
     double right,
   ) {
-    double width = windowSize.width - right - left;
+    double width = canvasSize.width - right - left;
 
     Map<String, Rect> map = {};
     double top = 0;
@@ -259,14 +264,14 @@ class AxisView {
     }
 
     // 再计算下边的
-    List<chart.Axis> rightAxis = [];
+    List<chart.BaseAxis> rightAxis = [];
     for (var axis in axisList) {
       if (axis.position == Position.bottom) {
         rightAxis.add(axis);
       }
     }
 
-    double bottom = windowSize.height;
+    double bottom = canvasSize.height;
     for (var axis in rightAxis.reversed) {
       double height = sizeMap[axis.id]!;
       Rect rect = Rect.fromLTWH(left, bottom - height, width, height);
@@ -279,7 +284,7 @@ class AxisView {
 
   /// 计算给定X轴的位置
   /// [all,top,bottom]
-  List<double> computeAxisXBounds(List<chart.Axis> axisList, Map<String, double> sizeMap) {
+  List<double> computeAxisXBounds(List<chart.BaseAxis> axisList, Map<String, double> sizeMap) {
     double top = 0;
     double bottom = 0;
     for (var element in axisList) {
@@ -294,7 +299,7 @@ class AxisView {
 
   /// 计算给定Y轴占用的总横向区域大小
   /// [all,left,right]
-  List<double> computeAxisYBounds(List<chart.Axis> axisList, Map<String, double> sizeMap) {
+  List<double> computeAxisYBounds(List<chart.BaseAxis> axisList, Map<String, double> sizeMap) {
     double left = 0;
     double right = 0;
     for (var element in axisList) {
@@ -359,36 +364,5 @@ class AxisView {
       }
     }
     return s;
-  }
-
-  Size computeTextSize(String text, TextStyle style, double maxWidth) {
-    if (text.isEmpty) {
-      return Size.zero;
-    }
-    TextSpan span = TextSpan(text: text, style: style);
-    TextPainter painter = TextPainter(text: span, textDirection: TextDirection.ltr);
-    painter.layout(minWidth: 0, maxWidth: maxWidth);
-    return painter.size;
-  }
-
-  /// 获取可用的坐标轴数量
-  List<chart.Axis> getCanUseXAxis() {
-    List<chart.Axis> list = [];
-    for (var element in config.xAxis) {
-      if (element.show) {
-        list.add(element);
-      }
-    }
-    return list;
-  }
-
-  List<chart.Axis> getCanUseYAxis() {
-    List<chart.Axis> list = [];
-    for (var element in config.yAxis) {
-      if (element.show) {
-        list.add(element);
-      }
-    }
-    return list;
   }
 }

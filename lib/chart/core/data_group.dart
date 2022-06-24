@@ -85,7 +85,6 @@ class DataPoint {
 
   final ChartLabel? label;
   final ChartLabel? labelSelect;
-
   final ItemStyle? itemStyle;
   final ItemStyle? itemSelectStyle;
 

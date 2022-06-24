@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 
 class GestureListener {
+
   void onTapDown(TapDownDetails details) {}
 
   void onTapUp(TapUpDetails details) {}

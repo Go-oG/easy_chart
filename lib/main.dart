@@ -1,4 +1,5 @@
 import 'package:easy_chart/chart/charts/line/line_config.dart';
+import 'package:easy_chart/chart/core/base_chart.dart';
 import 'package:easy_chart/chart/core/data_group.dart';
 import 'package:easy_chart/chart/options/axis.dart' as chart;
 import 'package:easy_chart/chart/options/style.dart';
@@ -45,7 +46,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   late LineConfig config;
-  List<LineGroup> list = [];
+  List<BaseRender> list = [];
 
   @override
   void initState() {
@@ -63,6 +64,7 @@ class _MyHomePageState extends State<MyHomePage> {
       entityList.add(DataPoint(i, i));
     }
     LineGroup group = LineGroup(ChartType.line, 'x1', 'y1', entityList);
+    LineRender render=LineRender(config, dataList)
     list.add(group);
   }
 
@@ -76,7 +78,7 @@ class _MyHomePageState extends State<MyHomePage> {
         child: SizedBox(
           width: 400,
           height: 400,
-          child: LineChart(config, list),
+          child: Chart(config, list),
         ),
       ),
     );

@@ -8,20 +8,28 @@ import 'split_area.dart';
 import 'split_line.dart';
 import 'style.dart';
 
-class AxisData {
-  late String value;
-  TextStyle style = const TextStyle();
+//坐标轴
+enum AxisType {
+  normal,
+  polar,
+  geo,
+}
 
-  AxisData(this.value);
+//所有坐标轴的基类
+abstract class BaseAxis {
+  final String id;
+  final Position position;
+  BaseAxis(this.id, this.position);
+
+  /// 坐标轴的类型
+  AxisType get type;
+  bool show = true;
+  double offset = 2;
 }
 
 ///笛卡尔坐标轴
-class Axis {
-  final String id;
-  final Position position;
-  bool show = true;
+class Axis extends BaseAxis {
   double? width;
-  double offset = 2;
   double labelMargin = 2;
   bool alignTicks = true;
   bool tickInside = false;
@@ -54,9 +62,8 @@ class Axis {
   AxisPointer axisPointer = AxisPointer();
   List<AxisData> data = [];
 
-  Axis(this.id, this.position,
+  Axis(super.id, super.position,
       {this.width,
-      this.offset = 2,
       this.labelMargin = 2,
       this.alignTicks = true,
       this.tickInside = false,
@@ -75,7 +82,16 @@ class Axis {
       this.maxInterval = double.infinity,
       this.interval,
       this.silent = false,
-      this.triggerEvent = false}) {
-    assert(id.isNotEmpty);
-  }
+      this.triggerEvent = false});
+
+  @override
+  AxisType get type => AxisType.normal;
+}
+
+
+class AxisData {
+  late String value;
+  TextStyle style = const TextStyle();
+
+  AxisData(this.value);
 }
