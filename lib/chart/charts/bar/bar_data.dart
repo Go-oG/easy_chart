@@ -1,11 +1,9 @@
+import 'package:easy_chart/chart/charts/line/line_data.dart';
 import 'package:easy_chart/chart/core/data_group.dart';
 import 'package:easy_chart/chart/options/string_number.dart';
 import 'package:flutter/material.dart';
 
-class BarGroup extends DataGroup {
-  final bool roundCap;
-  final bool stack;
-  final StackStrategy stackStrategy;
+class BarGroup extends LineGroup {
   final bool realtimeSort;
   final bool showBackground;
   final BoxDecoration? backgroundStyle;
@@ -29,10 +27,10 @@ class BarGroup extends DataGroup {
     this.barMinAngle = 0,
     this.barGap = const SNumber.percent(30),
     this.barCategoryGap = const SNumber.percent(20),
-    this.stack = false,
-    this.stackStrategy = StackStrategy.all,
+    super.stack = false,
+    super.stackStrategy = StackStrategy.all,
     this.realtimeSort = false,
-    this.roundCap = false,
+    super.roundCap = false,
     this.showBackground = false,
     this.backgroundStyle,
     super.id,

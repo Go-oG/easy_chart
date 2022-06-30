@@ -12,8 +12,9 @@ class AxisTick {
   /// 如果值为 2，表示隔两个标签显示一个标签，以此类推
   int interval = -1;
 
+  double length = 5;
 
-  double length = 4;
+  bool inside = false;
 
   LineStyle style = LineStyle();
 }

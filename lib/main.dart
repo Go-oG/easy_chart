@@ -1,12 +1,11 @@
-import 'package:easy_chart/chart/charts/line/line_config.dart';
-import 'package:easy_chart/chart/core/base_chart.dart';
+import 'package:easy_chart/chart/charts/bar/bar_data.dart';
 import 'package:easy_chart/chart/core/data_group.dart';
-import 'package:easy_chart/chart/options/axis.dart' as chart;
+import 'package:easy_chart/chart/options/chart.dart';
 import 'package:easy_chart/chart/options/style.dart';
 import 'package:flutter/material.dart';
 
 import 'chart/charts/line/line_chart.dart';
-import 'chart/charts/line/line_data.dart';
+import 'chart/options/axis.dart';
 
 void main() {
   runApp(const MyApp());
@@ -21,15 +20,6 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
         primarySwatch: Colors.blue,
       ),
       home: const MyHomePage(),
@@ -45,27 +35,35 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  late LineConfig config;
-  List<BaseRender> list = [];
+  late ChartConfig config;
+  late List<BarGroup> dataList = [];
 
   @override
   void initState() {
     super.initState();
-    list.clear();
-    config = LineConfig();
+
+    config = ChartConfig();
     config.yAxis = [
-      chart.Axis('y1', Position.left),
+      YAxis('y1', Position.left),
     ];
     config.xAxis = [
-      chart.Axis('x1', Position.bottom),
+      XAxis('x1', Position.bottom),
     ];
     List<DataPoint> entityList = [];
-    for (int i = 1; i <= 10; i++) {
+    List<DataPoint> entityList2 = [];
+    List<DataPoint> entityList3 = [];
+    for (int i = 1; i <= 5; i++) {
       entityList.add(DataPoint(i, i));
+      entityList2.add(DataPoint(i, i + 1));
+      entityList3.add(DataPoint(i, i + 2));
     }
-    LineGroup group = LineGroup(ChartType.line, 'x1', 'y1', entityList);
-    LineRender render=LineRender(config, dataList)
-    list.add(group);
+    BarGroup group = BarGroup(ChartType.line, 'x1', 'y1', entityList);
+    BarGroup group2 = BarGroup(ChartType.bar, 'x1', 'y1', entityList2, itemStyle: ItemStyle());
+   BarGroup group3 = BarGroup(ChartType.bar, 'x1', 'y1', entityList3, itemStyle: ItemStyle(color: Colors.lightGreen));
+
+    dataList.add(group);
+    dataList.add(group2);
+    dataList.add(group3);
   }
 
   @override
@@ -75,10 +73,12 @@ class _MyHomePageState extends State<MyHomePage> {
         title: const Text('chart'),
       ),
       body: Center(
-        child: SizedBox(
+        child: Container(
+          color: Colors.red.withOpacity(0.5),
+          padding: EdgeInsets.all(8),
           width: 400,
           height: 400,
-          child: Chart(config, list),
+          child: LineChart(config, dataList),
         ),
       ),
     );

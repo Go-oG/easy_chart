@@ -1,7 +1,6 @@
-import 'package:easy_chart/chart/component/axis/axis_manager.dart';
+import 'package:easy_chart/chart/core/chart_view.dart';
 import 'package:easy_chart/chart/options/animation.dart';
-import 'package:easy_chart/chart/options/axis.dart';
-import 'package:easy_chart/chart/options/base_config.dart';
+import 'package:easy_chart/chart/options/chart.dart';
 import 'package:easy_chart/chart/options/legend.dart';
 import 'package:easy_chart/chart/options/style.dart';
 import 'package:flutter/gestures.dart';
@@ -12,9 +11,9 @@ import 'gesture.dart';
 
 class Chart<D extends DataGroup> extends StatefulWidget {
   final ChartConfig config;
-  final List<BaseRender> renderList;
+  final List<View> renderList = [];
 
-  const Chart(this.config, this.renderList, {Key? key}) : super(key: key);
+  Chart(this.config, {Key? key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -38,12 +37,6 @@ class ChartState<D extends DataGroup> extends State<Chart<D>> with TickerProvide
         curve: animation.curve,
       );
     }
-
-    //注入动画
-    for (var element in widget.renderList) {
-      element._animation = element.obtainAnimation(this);
-    }
-
     render = MultiRender(widget.renderList, animation: _animation);
   }
 
@@ -397,7 +390,7 @@ class ChartState<D extends DataGroup> extends State<Chart<D>> with TickerProvide
 /// 渲染的基类，支持多个Render 同时渲染
 class MultiRender extends ChangeNotifier with GestureListener implements CustomPainter {
   final Animation<double>? animation; //全局
-  final List<BaseRender> renderList;
+  final List<View> renderList;
 
   //记录图表占用区域的范围
   Rect chartRect = const Rect.fromLTRB(0, 0, 0, 0);
@@ -408,22 +401,26 @@ class MultiRender extends ChangeNotifier with GestureListener implements CustomP
         notifyListeners();
       });
     }
-
-    for (var element in renderList) {
-      element._refresh = updateUI;
-      element.onInit();
-    }
   }
 
   @override
   void paint(Canvas canvas, Size size) {
     //先测量 获取各个Render的尺寸信息
     for (var element in renderList) {
-      element.onMeasure(size);
+      element.onMeasure(size.width, size.height);
     }
-    //再绘制
     for (var element in renderList) {
-      element.onDraw(canvas);
+      element.onLayout(0, 0, size.width, size.height);
+    }
+
+    //再绘制
+    double animationPercent = 1;
+    if (animation != null) {
+      animationPercent = animation!.value;
+    }
+
+    for (var element in renderList) {
+      element.draw(canvas, animationPercent);
     }
   }
 
@@ -447,67 +444,10 @@ class MultiRender extends ChangeNotifier with GestureListener implements CustomP
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    for (var element in renderList) {
-      if (element.shouldRepaint()) {
-        return true;
-      }
-    }
-    return false;
+    return true;
   }
 
   void updateUI() {
     notifyListeners();
-  }
-}
-
-/// 图表渲染器，负责整个视图的渲染
-/// 由于单独的一个Render占据整个画布，因此没有布局时是占满整个区域的，因此没有onLayout 方法
-/// 整个Render 包含坐标轴和图表区
-
-abstract class BaseRender with GestureListener {
-  VoidCallback? _refresh;
-  late Size canvasSize;
-  late AxisManager axisManager; //坐标轴管理工具
-  Animation<double>? _animation;
-
-
-  @mustCallSuper
-  void onInit() {
-    _animation?.addListener(updateUI);
-    axisManager=AxisManager();
-  }
-
-  Animation<double>? obtainAnimation(TickerProvider vsync) {
-    return null;
-  }
-
-  @mustCallSuper
-  void onMeasure(Size canvasSize) {
-    this.canvasSize = canvasSize;
-  }
-
-  void onDraw(Canvas canvas);
-
-  void updateUI() {
-    _refresh?.call();
-  }
-
-  bool hitTest(Offset position) {
-    return false;
-  }
-
-  bool shouldRepaint() {
-    return true;
-  }
-}
-
-/// 适用于二维笛卡尔坐标系的简单渲染器
-class SimpleRender<C extends BaseAxis, D extends DataGroup> extends BaseRender {
-  @override
-  void onDraw(Canvas canvas) {}
-
-  @override
-  void onMeasure(Size canvasSize) {
-    super.onMeasure(canvasSize);
   }
 }

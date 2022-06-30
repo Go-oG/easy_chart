@@ -1,4 +1,6 @@
 //雷达图坐标
+import 'package:easy_chart/chart/functions.dart';
+import 'package:easy_chart/chart/options/style.dart';
 import 'package:flutter/material.dart';
 
 import 'axis_label.dart';
@@ -10,7 +12,12 @@ import 'string_number.dart';
 
 class RadarName {
   bool show = true;
+  NumberFormatter? formatter;
+
   TextStyle textStyle = const TextStyle();
+  BoxDecoration decoration = const BoxDecoration();
+  OverFlow overFlow=OverFlow.cut;
+  String ellipsis='';
 }
 
 class RadarIndicator {
@@ -24,11 +31,13 @@ enum RadarShape { circle, polygon }
 
 class Radar {
   final String id;
-
   bool show = true;
+  List<SNumber> center = const [SNumber.percent(50), SNumber.percent(50)];
   SNumber radius = const SNumber.percent(75); // 支持数字和百分比表示
-  num startAngle = 90;
+  double startAngle = 90;
+
   List<RadarName> itemList = [];
+
   num nameGap = 15;
   num splitNumber = 5;
   RadarShape shape = RadarShape.circle;

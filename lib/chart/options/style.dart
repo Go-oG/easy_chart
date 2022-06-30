@@ -41,13 +41,29 @@ enum Position {
 enum Direction { horizontal, vertical }
 
 class LineStyle {
-  Color color = Colors.black;
-  double width = 2;
-  AxisLineType type = AxisLineType.solid;
-  StrokeCap cap = StrokeCap.round;
-  StrokeJoin join = StrokeJoin.bevel;
-  List<double> dash = [];
-  BoxShadow? shadow;
+  final Color color;
+
+  final double width;
+
+  final AxisLineType type;
+
+  final StrokeCap cap;
+
+  final StrokeJoin join;
+  final List<double> dash;
+
+  final BoxShadow? shadow;
+  final Shader? shader;
+
+  const LineStyle(
+      {this.color = Colors.black,
+      this.width = 2,
+      this.type = AxisLineType.solid,
+      this.cap = StrokeCap.round,
+      this.join = StrokeJoin.bevel,
+      this.dash = const [],
+      this.shadow,
+      this.shader});
 
   void fillPaint(Paint paint) {
     paint.style = PaintingStyle.fill;
@@ -107,11 +123,14 @@ class AreaStyle {
 }
 
 //描述项目自身相关的数据
-class ItemStyle{
-  Color color = Colors.black;
-  BoxDecoration? decoration;
-  Gradient? gradient;
-  BoxShadow? shadow;
+class ItemStyle {
+  final Color color;
+
+  final BoxDecoration? decoration;
+  final Shader? shader;
+  final BoxShadow? shadow;
+
+  ItemStyle({this.color = Colors.teal, this.decoration, this.shader, this.shadow});
 }
 
 class ChartSymbol {
@@ -150,7 +169,6 @@ class ChartSymbol {
     return false;
   }
 }
-
 
 class DashedPathProperties {
   double extractedPathLength;

@@ -1,3 +1,4 @@
+import 'package:easy_chart/chart/options/string_number.dart';
 import 'package:flutter/material.dart';
 
 import 'axis.dart';
@@ -76,10 +77,15 @@ class PolarAngleAxis {
   PolarAngleAxis(this.id);
 }
 
-class Polar {
+class PolarAxis {
   final String id;
   num? radius;
+  List<SNumber> center = const [SNumber.percent(50), SNumber.percent(50)];
+
+  PolarRadiusAxis radiusAxis = PolarRadiusAxis('');
+  PolarAngleAxis angleAxis = PolarAngleAxis('');
+
   ToolTip toolTip = ToolTip();
 
-  Polar(this.id);
+  PolarAxis(this.id);
 }

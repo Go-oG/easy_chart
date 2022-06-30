@@ -1,5 +1,8 @@
 // 轴标签相关
-import 'label.dart';
+import 'package:easy_chart/chart/functions.dart';
+import 'package:easy_chart/chart/options/style.dart';
+import 'package:flutter/material.dart';
+
 class AxisLabel {
   bool show = true;
 
@@ -9,9 +12,27 @@ class AxisLabel {
   // 如果设置为 1，表示『隔一个标签显示一个标签』，如果值为 2，表示隔两个标签显示一个标签，以此类推。
   int interval = -1;
   bool inside = false;
+  double rotate = 0;
+  double margin = 8;
+
+  NumberFormatter? formatter;
   bool? showMinLabel;
   bool? showMaxLabel;
   bool hideOverLap = true;
-  ChartLabel label = ChartLabel();
 
+  TextStyle textStyle = const TextStyle();
+  TextAlign textAlign = TextAlign.center;
+  BoxDecoration decoration = const BoxDecoration();
+
+  num? width;
+  num? height;
+  OverFlow overFlow = OverFlow.cut;
+  String ellipsis = '';
+
+  TextPainter toTextPainter(String s) {
+    TextSpan span = TextSpan(text: s, style: textStyle);
+    TextPainter painter = TextPainter(text: span, textAlign: textAlign, textDirection: TextDirection.ltr);
+
+    return painter;
+  }
 }
