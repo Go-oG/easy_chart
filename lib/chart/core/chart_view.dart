@@ -291,8 +291,6 @@ class ViewGroup extends View implements ViewParent, ViewManager {
     }
   }
 
-
-
   @override
   void recomputeViewAttributes(View child) {}
 
@@ -343,4 +341,5 @@ class ViewGroup extends View implements ViewParent, ViewManager {
     children.add(child);
     children.addAll(end);
   }
+
 }

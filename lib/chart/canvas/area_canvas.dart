@@ -26,5 +26,4 @@ class PathCanvas extends ChartCanvas {
     canvas.drawPath(path, _paint);
   }
 
-
 }

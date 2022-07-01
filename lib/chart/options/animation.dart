@@ -9,10 +9,8 @@ class ChartAnimation {
 
   ChartAnimation(
       {this.enable = true,
-      this.duration = const Duration(milliseconds: 300),
-      this.reverseDuration = const Duration(milliseconds: 300),
+      this.duration = const Duration(milliseconds: 800),
+      this.reverseDuration = const Duration(milliseconds: 800),
       this.behavior = AnimationBehavior.normal,
-      this.curve = Curves.linear});
-
-
+      this.curve = Curves.easeInOut});
 }

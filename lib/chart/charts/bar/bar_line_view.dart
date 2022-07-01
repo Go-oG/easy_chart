@@ -44,8 +44,6 @@ class BarLineChartView extends View {
     }
   }
 
-
-
   List<ChartCanvas> _layoutForCategory() {
     List<ChartCanvas> list = [];
     int dataLength = xAxis.data.length;
@@ -178,26 +176,32 @@ class BarLineChartView extends View {
     for (var element in widthList) {
       allWidth += element;
     }
-
     allWidth += (gap * (barList.length - 1));
 
-    for (int i = 0; i < dataLength; i++) {
-      double offset = i * itemWidth + ((itemWidth - allWidth) / 2.0);
-      for (int j = 0; j < barList.length; j++) {
-        BarGroup data = barList[j];
+    for (int j = 0; j < barList.length; j++) {
+      List<Rect> rl = [];
+      BarGroup data = barList[j];
+      ItemStyle style = data.itemStyle!;
+
+      double tmpOffset = 0;
+      for (int k = 0; k < j; k++) {
+        tmpOffset += widthList[k];
+      }
+      tmpOffset += (j * gap) + ((itemWidth - allWidth) / 2.0);
+
+      for (int i = 0; i < dataLength; i++) {
         if (data.dataList.length <= i) {
-          offset += widthList[j];
           continue;
         }
+        double offset = i * itemWidth + tmpOffset;
         DataPoint? point = data.dataList[i];
         if (point != null) {
           double height = boundRect.height * point.y / maxData;
           Rect rect = Rect.fromLTRB(offset, boundRect.height - height, offset + widthList[j], boundRect.height);
-          ItemStyle style = data.itemStyle!;
-          canvasList.add(RectCanvas(rect, color: style.color, shader: style.shader, fill: true));
+          rl.add(rect);
         }
-        offset += widthList[j] + gap;
       }
+      canvasList.add(RectCanvas(rl, color: style.color, shader: style.shader, fill: true));
     }
     return canvasList;
   }
@@ -246,6 +250,4 @@ class BarLineChartView extends View {
     }
     return [minData, maxData];
   }
-
-
 }

@@ -38,6 +38,7 @@ class ChartState<D extends DataGroup> extends State<Chart<D>> with TickerProvide
       );
     }
     render = MultiRender(widget.renderList, animation: _animation);
+    _animationController?.forward();
   }
 
   @override
@@ -416,7 +417,10 @@ class MultiRender extends ChangeNotifier with GestureListener implements CustomP
     //再绘制
     double animationPercent = 1;
     if (animation != null) {
-      animationPercent = animation!.value;
+      AnimationStatus status = animation!.status;
+      if (status == AnimationStatus.reverse || status == AnimationStatus.forward) {
+        animationPercent = animation!.value;
+      }
     }
 
     for (var element in renderList) {

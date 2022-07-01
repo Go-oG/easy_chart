@@ -1,5 +1,6 @@
 import 'package:easy_chart/chart/charts/bar/bar_data.dart';
 import 'package:easy_chart/chart/core/data_group.dart';
+import 'package:easy_chart/chart/options/animation.dart';
 import 'package:easy_chart/chart/options/chart.dart';
 import 'package:easy_chart/chart/options/style.dart';
 import 'package:flutter/material.dart';
@@ -43,6 +44,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
 
     config = ChartConfig();
+    config.animation=ChartAnimation(duration: const Duration(milliseconds: 1200));
     config.yAxis = [
       YAxis('y1', Position.left),
     ];
@@ -75,7 +77,7 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Center(
         child: Container(
           color: Colors.red.withOpacity(0.5),
-          padding: EdgeInsets.all(8),
+          padding: const EdgeInsets.all(8),
           width: 400,
           height: 400,
           child: LineChart(config, dataList),
