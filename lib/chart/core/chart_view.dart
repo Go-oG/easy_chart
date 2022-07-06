@@ -71,7 +71,7 @@ abstract class View with GestureListener {
 
   int id = NO_ID;
 
-  Rectangle<double> boundRect = const Rectangle(0, 0, 0, 0);
+  Rect boundRect = const Rect.fromLTRB(0, 0, 0, 0);
   Rect? clipRect;
 
   @protected
@@ -92,6 +92,7 @@ abstract class View with GestureListener {
   bool hovered = false;
 
   BoxDecoration backgroundStyle = const BoxDecoration(color: Colors.white);
+  late BoxPainter _boxPainter;
   BoxDecoration? foregroundStyle;
 
   ViewParent? parent;
@@ -113,16 +114,26 @@ abstract class View with GestureListener {
 
   String? tooltip;
 
-  Paint? paint;
+  late Paint paint;
 
+  View({Paint? paint}) {
+    if (paint != null) {
+      this.paint = paint;
+    } else {
+      this.paint = Paint();
+    }
+    _boxPainter = backgroundStyle.createBoxPainter();
+  }
+
+  @mustCallSuper
   void onMeasure(double parentWidth, double parentHeight) {
-    boundRect = Rectangle(0, 0, parentWidth, parentHeight);
+    boundRect = Rect.fromLTWH(0, 0, parentWidth, parentHeight);
   }
 
   @mustCallSuper
   void onLayout(double left, double top, double right, double bottom) {
     inLayout = true;
-    boundRect = Rectangle(left, top, right - left, bottom - top);
+    boundRect = Rect.fromLTRB(left, top, right, bottom);
   }
 
   @mustCallSuper
@@ -134,28 +145,34 @@ abstract class View with GestureListener {
 
   double get height => boundRect.height;
 
+  // 返回当前View在父Parent中的位置坐标
   double get left => boundRect.left;
-
-  double get right => boundRect.right;
 
   double get top => boundRect.top;
 
+  double get right => boundRect.right;
+
   double get bottom => boundRect.bottom;
+
+  // 返回自身的中心点坐标
+  double get centerX => width / 2.0;
+
+  double get centerY => height / 2.0;
 
   void draw(Canvas canvas, double animatorPercent) {
     onDraw(canvas, animatorPercent);
   }
 
   void onDraw(Canvas canvas, double animatorPercent) {
-    paint ??= Paint();
-    backgroundStyle.createBoxPainter().paint(canvas, Offset.zero, ImageConfiguration(size: Size(width, height)));
+    _boxPainter.paint(canvas, Offset.zero, ImageConfiguration(size: Size(width, height)));
   }
 
   //返回其矩形边界
-  Rectangle<double> get areaBounds => boundRect;
+  Rect get areaBounds => boundRect;
 
   bool hitTest(Offset position) {
-    return areaBounds.containsPoint(Point(position.dx, position.dy));
+    Rectangle rectangle = Rectangle(left, top, width, height);
+    return rectangle.containsPoint(Point(position.dx, position.dy));
   }
 
   void invalidate() {
@@ -227,6 +244,10 @@ abstract class View with GestureListener {
 class ViewGroup extends View implements ViewParent, ViewManager {
   final List<View> children = [];
 
+  void clearChildren() {
+    children.clear();
+  }
+
   void addView1(View child) {
     addView2(child, -1);
   }
@@ -279,13 +300,13 @@ class ViewGroup extends View implements ViewParent, ViewManager {
     onDraw(canvas, animatorPercent);
 
     for (var element in children) {
-      int count=canvas.getSaveCount();
+      int count = canvas.getSaveCount();
       canvas.save();
-      canvas.translate(element.left,element.top);
+      canvas.translate(element.left, element.top);
       element.draw(canvas, animatorPercent);
       canvas.clipRect(Rect.fromLTWH(0, 0, width, height));
       canvas.restore();
-      if(canvas.getSaveCount()!=count){
+      if (canvas.getSaveCount() != count) {
         throw FlutterError('you should call canvas.restore when after call canvas.save');
       }
     }
@@ -341,5 +362,4 @@ class ViewGroup extends View implements ViewParent, ViewManager {
     children.add(child);
     children.addAll(end);
   }
-
 }

@@ -1,5 +1,6 @@
 import 'package:easy_chart/chart/options/label.dart';
 import 'package:easy_chart/chart/options/style.dart';
+import 'package:flutter/material.dart';
 
 ///https://echarts.apache.org/zh/option.html#series-heatmap
 class ChartType {
@@ -85,7 +86,7 @@ class DataPoint {
 
   final ChartLabel? label;
   final ChartLabel? labelSelect;
-  final ItemStyle? itemStyle;
+  final ItemStyle itemStyle;
   final ItemStyle? itemSelectStyle;
 
   DataPoint(
@@ -93,7 +94,7 @@ class DataPoint {
     num y, {
     this.label,
     this.labelSelect,
-    this.itemStyle,
+    this.itemStyle = const ItemStyle(BoxDecoration(color: Colors.lightGreen)),
     this.itemSelectStyle,
   }) {
     this.x = x.toDouble();

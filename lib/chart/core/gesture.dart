@@ -1,118 +1,245 @@
 import 'package:flutter/gestures.dart';
 
 class GestureListener {
+  void onTapDown(TapDownDetails details) {
+    print('onTapDown:$details');
+  }
 
-  void onTapDown(TapDownDetails details) {}
+  void onTapUp(TapUpDetails details) {
+    print('onTapUp:$details');
+  }
 
-  void onTapUp(TapUpDetails details) {}
+  void onTap() {
+    print('onTap');
+  }
 
-  void onTap() {}
+  void onTapCancel() {
+    print('onTapCancel');
+  }
 
-  void onTapCancel() {}
+  void onSecondaryTap() {
+    print('onSecondaryTap');
+  }
 
-  void onSecondaryTap() {}
+  void onSecondaryTapDown(TapDownDetails details) {
+    print('onSecondaryTapDown:$details');
+  }
 
-  void onSecondaryTapDown(TapDownDetails details) {}
+  void onSecondaryTapUp(TapUpDetails details) {
+    print('onSecondaryTapUp:$details');
+  }
 
-  void onSecondaryTapUp(TapUpDetails details) {}
+  void onSecondaryTapCancel() {
+    print('onSecondaryTapCancel');
+  }
 
-  void onSecondaryTapCancel() {}
+  void onTertiaryTapDown(TapDownDetails details) {
+    print('onTertiaryTapDown:$details');
+  }
 
-  void onTertiaryTapDown(TapDownDetails details) {}
+  void onTertiaryTapUp(TapUpDetails details) {
+    print('onTertiaryTapUp:$details');
+  }
 
-  void onTertiaryTapUp(TapUpDetails details) {}
+  void onTertiaryTapCancel() {
+    print('onTertiaryTapCancel');
+  }
 
-  void onTertiaryTapCancel() {}
+  void onDoubleTapDown(TapDownDetails details) {
+    print('onDoubleTapDown:$details');
+  }
 
-  void onDoubleTapDown(TapDownDetails details) {}
+  void onDoubleTap() {
+    print('onDoubleTap');
+  }
 
-  void onDoubleTap() {}
+  void onDoubleTapCancel() {
+    print('onDoubleTapCancel');
+  }
 
-  void onDoubleTapCancel() {}
+  void onLongPressDown(LongPressDownDetails details) {
+    print('onLongPressDown:$details');
+  }
 
-  void onLongPressDown(LongPressDownDetails details) {}
+  void onLongPressCancel() {
+    print('onLongPressCancel');
+  }
 
-  void onLongPressCancel() {}
+  void onLongPress() {
+    print('onLongPress');
+  }
 
-  void onLongPress() {}
+  void onLongPressStart(LongPressStartDetails details) {
+    print('onLongPressStart:$details');
+  }
 
-  void onLongPressStart(LongPressStartDetails details) {}
+  void onLongPressMoveUpdate(LongPressMoveUpdateDetails details) {
+    print('onLongPressMoveUpdate:$details');
+  }
 
-  void onLongPressMoveUpdate(LongPressMoveUpdateDetails details) {}
+  void onLongPressUp() {
+    print('onLongPressUp');
+  }
 
-  void onLongPressUp() {}
+  void onLongPressEnd(LongPressEndDetails details) {
+    print('onLongPressEnd:$details');
+  }
 
-  void onLongPressEnd(LongPressEndDetails details) {}
+  void onSecondaryLongPressDown(LongPressDownDetails details) {
+    print('onSecondaryLongPressDown:$details');
+  }
 
-  void onSecondaryLongPressDown(LongPressDownDetails details) {}
+  void onSecondaryLongPressCancel() {
+    print('onSecondaryLongPressCancel');
+  }
 
-  void onSecondaryLongPressCancel() {}
+  void onSecondaryLongPress() {
+    print('onSecondaryLongPress');
+  }
 
-  void onSecondaryLongPress() {}
+  void onSecondaryLongPressStart(LongPressStartDetails details) {
+    print('onSecondaryLongPressStart:$details');
+  }
 
-  void onSecondaryLongPressStart(LongPressStartDetails details) {}
+  void onSecondaryLongPressMoveUpdate(LongPressMoveUpdateDetails details) {
+    print('onSecondaryLongPressMoveUpdate:$details');
+  }
 
-  void onSecondaryLongPressMoveUpdate(LongPressMoveUpdateDetails details) {}
+  void onSecondaryLongPressUp() {
+    print('onSecondaryLongPressUp');
+  }
 
-  void onSecondaryLongPressUp() {}
+  void onSecondaryLongPressEnd(LongPressEndDetails details) {
+    print('onSecondaryLongPressEnd:$details');
+  }
 
-  void onSecondaryLongPressEnd(LongPressEndDetails details) {}
+  void onTertiaryLongPressDown(LongPressDownDetails details) {
+    print('onTertiaryLongPressDown:$details');
+  }
 
-  void onTertiaryLongPressDown(LongPressDownDetails details) {}
+  void onTertiaryLongPressCancel() {
+    print('onTertiaryLongPressCancel');
+  }
 
-  void onTertiaryLongPressCancel() {}
+  void onTertiaryLongPress() {
+    print('onTertiaryLongPress');
+  }
 
-  void onTertiaryLongPress() {}
+  void onTertiaryLongPressStart(LongPressStartDetails details) {
+    print('onTertiaryLongPressStart:$details');
+  }
 
-  void onTertiaryLongPressStart(LongPressStartDetails details) {}
+  void onTertiaryLongPressMoveUpdate(LongPressMoveUpdateDetails details) {
+    print('onTertiaryLongPressMoveUpdate:$details');
+  }
 
-  void onTertiaryLongPressMoveUpdate(LongPressMoveUpdateDetails details) {}
+  void onTertiaryLongPressUp() {
+    print('onTertiaryLongPressUp');
+  }
 
-  void onTertiaryLongPressUp() {}
+  void onTertiaryLongPressEnd(LongPressEndDetails details) {
+    print('onTertiaryLongPressEnd:$details');
+  }
 
-  void onTertiaryLongPressEnd(LongPressEndDetails details) {}
+  void onVerticalDragDown(DragDownDetails details) {
+    print('onVerticalDragDown:$details');
+  }
 
-  void onVerticalDragDown(DragDownDetails details) {}
+  void onVerticalDragStart(DragStartDetails details) {
+    print('onVerticalDragStart:$details');
+  }
 
-  void onVerticalDragStart(DragStartDetails details) {}
+  void onVerticalDragUpdate(DragUpdateDetails details) {
+    print('onVerticalDragUpdate:$details');
+  }
 
-  void onVerticalDragUpdate(DragUpdateDetails details) {}
+  void onVerticalDragEnd(DragEndDetails details) {
+    print('onVerticalDragEnd:$details');
+  }
 
-  void onVerticalDragEnd(DragEndDetails details) {}
+  void onVerticalDragCancel() {
+    print('onVerticalDragCancel');
+  }
 
-  void onVerticalDragCancel() {}
+  void onHorizontalDragDown(DragDownDetails details) {
+    print('onHorizontalDragDown:$details');
+  }
 
-  void onHorizontalDragDown(DragDownDetails details) {}
+  void onHorizontalDragStart(DragStartDetails details) {
+    print('onHorizontalDragStart:$details');
+  }
 
-  void onHorizontalDragStart(DragStartDetails details) {}
+  void onHorizontalDragUpdate(DragUpdateDetails details) {
+    print('onHorizontalDragUpdate:$details');
+  }
 
-  void onHorizontalDragUpdate(DragUpdateDetails details) {}
+  void onHorizontalDragEnd(DragEndDetails details) {
+    print('onHorizontalDragEnd:$details');
+  }
 
-  void onHorizontalDragEnd(DragEndDetails details) {}
+  void onHorizontalDragCancel() {
+    print('onHorizontalDragCancel');
+  }
 
-  void onHorizontalDragCancel() {}
+  void onPanDown(DragDownDetails details) {
+    print('onPanDown:$details');
+  }
 
-  void onPanDown(DragDownDetails details) {}
+  void onPanStart(DragStartDetails details) {
+    print('onPanStart:$details');
+  }
 
-  void onPanStart(DragStartDetails details) {}
+  void onPanUpdate(DragUpdateDetails details) {
+    print('onPanUpdate:$details');
+  }
 
-  void onPanUpdate(DragUpdateDetails details) {}
+  void onPanEnd(DragEndDetails details) {
+    print('onPanEnd:$details');
+  }
 
-  void onPanEnd(DragEndDetails details) {}
+  void onPanCancel() {
+    print('onPanCancel');
+  }
 
-  void onPanCancel() {}
+  void onScaleStart(ScaleStartDetails details) {
+    print('onScaleStart:$details');
+  }
 
-  void onScaleStart(ScaleStartDetails details) {}
+  void onScaleUpdate(ScaleUpdateDetails details) {
+    print('onScaleUpdate:$details');
+  }
 
-  void onScaleUpdate(ScaleUpdateDetails details) {}
+  void onScaleEnd(ScaleEndDetails details) {
+    print('onScaleEnd:$details');
+  }
 
-  void onScaleEnd(ScaleEndDetails details) {}
+  void onForcePressStart(ForcePressDetails details) {
+    print('onForcePressStart:$details');
+  }
 
-  void onForcePressStart(ForcePressDetails details) {}
+  void onForcePressPeak(ForcePressDetails details) {
+    print('onForcePressPeak:$details');
+  }
 
-  void onForcePressPeak(ForcePressDetails details) {}
+  void onForcePressUpdate(ForcePressDetails details) {
+    print('onForcePressUpdate:$details');
+  }
 
-  void onForcePressUpdate(ForcePressDetails details) {}
+  void onForcePressEnd(ForcePressDetails details) {
+    print('onForcePressEnd:$details');
+  }
 
-  void onForcePressEnd(ForcePressDetails details) {}
+  //鼠标相关的事件
+  void onMouseEnter(PointerEvent details) {
+    print('onMouseEnter:$details');
+  }
+
+  void onMouseExit(PointerEvent details) {
+    print('onMouseExit:$details');
+  }
+
+  void onMouseHover(PointerEvent details) {
+    print('onMouseHover:$details');
+  }
+
 }

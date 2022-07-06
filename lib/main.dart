@@ -44,7 +44,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
 
     config = ChartConfig();
-    config.animation=ChartAnimation(duration: const Duration(milliseconds: 1200));
+    config.animation = ChartAnimation(duration: const Duration(milliseconds: 1200));
     config.yAxis = [
       YAxis('y1', Position.left),
     ];
@@ -55,13 +55,39 @@ class _MyHomePageState extends State<MyHomePage> {
     List<DataPoint> entityList2 = [];
     List<DataPoint> entityList3 = [];
     for (int i = 1; i <= 5; i++) {
-      entityList.add(DataPoint(i, i));
-      entityList2.add(DataPoint(i, i + 1));
-      entityList3.add(DataPoint(i, i + 2));
+      entityList.add(DataPoint(i, i + 2 * (i ~/ 2),
+          itemStyle: ItemStyle(BoxDecoration(
+            color: Colors.brown,
+            border: Border.all(color: Colors.red),
+          ))));
+
+      entityList2.add(DataPoint(i, i + 1,
+          itemStyle: ItemStyle(
+            BoxDecoration(
+              color: Colors.lightGreen,
+              border: Border.all(color: Colors.red),
+            ),
+          )));
+      entityList3.add(DataPoint(i, i + 2,
+          itemStyle: const ItemStyle(
+            BoxDecoration(color: Colors.lightBlue),
+          )));
     }
     BarGroup group = BarGroup(ChartType.line, 'x1', 'y1', entityList);
-    BarGroup group2 = BarGroup(ChartType.bar, 'x1', 'y1', entityList2, itemStyle: ItemStyle());
-   BarGroup group3 = BarGroup(ChartType.bar, 'x1', 'y1', entityList3, itemStyle: ItemStyle(color: Colors.lightGreen));
+    BarGroup group2 = BarGroup(
+      ChartType.bar,
+      'x1',
+      'y1',
+      entityList2,
+      itemStyle: const ItemStyle(BoxDecoration(color: Colors.lightBlue)),
+    );
+    BarGroup group3 = BarGroup(
+      ChartType.bar,
+      'x1',
+      'y1',
+      entityList3,
+      itemStyle: const ItemStyle(BoxDecoration(color: Colors.lightGreen)),
+    );
 
     dataList.add(group);
     dataList.add(group2);

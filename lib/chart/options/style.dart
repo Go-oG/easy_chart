@@ -124,32 +124,47 @@ class AreaStyle {
 
 //描述项目自身相关的数据
 class ItemStyle {
-  final Color color;
+  final BoxDecoration decoration;
 
-  final BoxDecoration? decoration;
-  final Shader? shader;
-  final BoxShadow? shadow;
-
-  ItemStyle({this.color = Colors.teal, this.decoration, this.shader, this.shadow});
+  const ItemStyle(this.decoration);
 }
 
 class ChartSymbol {
+  static const String Circle = 'circle';
+  static const String EmptyCircle = 'emptyCircle';
+  static const String Rect = 'rect';
+  static const String RoundRect = 'roundRect';
+  static const String Triangle = 'triangle';
+  static const String Diamond = 'diamond';
+  static const String Pin = 'pin';
+  static const String Arrow = 'arrow';
+  static const String None = 'none';
+
   final String type;
   final Size size;
   final double rotate;
   final bool keepAspect = false;
   final Offset offset;
 
-  static const ChartSymbol circle = ChartSymbol('circle');
-  static const ChartSymbol rect = ChartSymbol('rect');
-  static const ChartSymbol roundRect = ChartSymbol('roundRect');
-  static const ChartSymbol triangle = ChartSymbol('triangle');
-  static const ChartSymbol diamond = ChartSymbol('diamond');
-  static const ChartSymbol pin = ChartSymbol('pin');
-  static const ChartSymbol arrow = ChartSymbol('arrow');
-  static const ChartSymbol none = ChartSymbol('none');
+  const ChartSymbol(this.type, {this.size = const Size(6, 6), this.rotate = 0, this.offset = Offset.zero});
 
-  const ChartSymbol(this.type, {this.size = const Size(12, 12), this.rotate = 0, this.offset = Offset.zero});
+  const ChartSymbol.circle({this.size = const Size(6, 6), this.rotate = 0, this.offset = Offset.zero}) : type = Circle;
+
+  const ChartSymbol.emptyCircle({this.size = const Size(6, 6), this.rotate = 0, this.offset = Offset.zero}) : type = EmptyCircle;
+
+  const ChartSymbol.rect({this.size = const Size(6, 6), this.rotate = 0, this.offset = Offset.zero}) : type = Rect;
+
+  const ChartSymbol.roundRect({this.size = const Size(6, 6), this.rotate = 0, this.offset = Offset.zero}) : type = RoundRect;
+
+  const ChartSymbol.triangle({this.size = const Size(6, 6), this.rotate = 0, this.offset = Offset.zero}) : type = Triangle;
+
+  const ChartSymbol.diamond({this.size = const Size(6, 6), this.rotate = 0, this.offset = Offset.zero}) : type = Diamond;
+
+  const ChartSymbol.pin({this.size = const Size(6, 6), this.rotate = 0, this.offset = Offset.zero}) : type = Pin;
+
+  const ChartSymbol.arrow({this.size = const Size(6, 6), this.rotate = 0, this.offset = Offset.zero}) : type = Arrow;
+
+  const ChartSymbol.none({this.size = const Size(6, 6), this.rotate = 0, this.offset = Offset.zero}) : type = None;
 
   @override
   String toString() {
