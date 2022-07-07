@@ -1,7 +1,6 @@
-import 'dart:math';
-
 import 'package:easy_chart/chart/charts/bar/bar_data.dart';
 import 'package:easy_chart/chart/component/views/line_view.dart';
+import 'package:easy_chart/chart/charts/radar/radar_view.dart';
 import 'package:easy_chart/chart/component/views/rect_view.dart';
 import 'package:easy_chart/chart/component/views/shape_view.dart';
 import 'package:easy_chart/chart/core/chart_view.dart';
@@ -28,6 +27,10 @@ class BarLineChartView extends ViewGroup {
     } else {
       _layoutForValue();
     }
+    RadarView view =
+        RadarView(6, 4, areaColors: [Colors.blueGrey, Colors.teal, Colors.lightGreen, Colors.deepPurple], paint: paint);
+    view.onLayout(0, 0, width, height);
+    addView1(view);
   }
 
   void _layoutForCategory() {
@@ -165,7 +168,7 @@ class BarLineChartView extends ViewGroup {
   void _layoutForCategoryLine(List<BarGroup> lineList, double itemWidth, double maxData) {
     for (var element in lineList) {
       double offset = 0;
-      List<Point> pl = [];
+      List<Offset> pl = [];
       for (var e2 in element.dataList) {
         if (e2 == null) {
           offset += itemWidth;
@@ -174,32 +177,26 @@ class BarLineChartView extends ViewGroup {
         double height = boundRect.height * e2.y / maxData;
         double x = offset + itemWidth / 2;
         double y = boundRect.bottom - height;
-        pl.add(Point(x, y));
+        pl.add(Offset(x, y));
         offset += itemWidth;
       }
 
       LineStyle style = element.lineStyle;
-      LineView lineCanvas = LineView(
-        pl,
-        lineWidth: style.width,
-        color: style.color,
-        shadow: style.shadow,
-        gradient: style.shader,
-        smooth: false,
-      );
+      LineView lineCanvas = LineView(pl, style,paint: paint);
       lineCanvas.onMeasure(areaBounds.width, areaBounds.height);
       lineCanvas.onLayout(0, 0, areaBounds.width, areaBounds.height);
       addView1(lineCanvas);
 
-      for (var element in pl) {
-        double x = element.x.toDouble();
-        double y = element.y.toDouble();
-        ShapeView sv = ShapeView(const ChartSymbol.pin(), Colors.brown, true);
-        Size svSize = sv.symbol.size;
-        sv.onMeasure(areaBounds.width, areaBounds.height);
-        sv.onLayout(x - svSize.width / 2, y - svSize.height / 2, x + svSize.width / 2, y + svSize.height / 2);
-        addView1(sv);
-      }
+      // for (var element in pl) {
+      //   double x = element.dx.toDouble();
+      //   double y = element.dy.toDouble();
+      //   ShapeView sv = ShapeView(const ChartSymbol.pin(), Colors.brown, true);
+      //   Size svSize = sv.symbol.size;
+      //   sv.onMeasure(areaBounds.width, areaBounds.height);
+      //   sv.onLayout(x - svSize.width / 2, y - svSize.height / 2, x + svSize.width / 2, y + svSize.height / 2);
+      //   addView1(sv);
+      // }
+
     }
   }
 
@@ -247,6 +244,4 @@ class BarLineChartView extends ViewGroup {
     }
     return [minData, maxData];
   }
-
-
 }

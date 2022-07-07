@@ -1,39 +1,25 @@
 import 'dart:math';
 import 'dart:ui';
 import 'package:easy_chart/chart/core/chart_view.dart';
+import 'package:easy_chart/chart/options/style.dart';
 import 'package:easy_chart/chart/utils/monotonex.dart';
 
 class LineView extends View {
-  final List<Point> pointList;
-  final double lineWidth;
-  final Color? color;
-  final Shadow? shadow;
-  final Shader? gradient;
-  final bool smooth;
+  final List<Offset> pointList;
+  final LineStyle style;
+
   late Path _path;
 
-  LineView(this.pointList, {this.lineWidth = 2, this.color, this.shadow, this.gradient, this.smooth = false}) {
-    paint.strokeWidth = lineWidth;
-    if (color != null) {
-      paint.color = color!;
-    }
-    if (shadow != null) {
-      paint.color = shadow!.color;
-      paint.maskFilter = MaskFilter.blur(BlurStyle.normal, shadow!.blurSigma);
-    }
-    if (gradient != null) {
-      paint.shader = gradient!;
-    }
-    paint.style = PaintingStyle.stroke;
+  LineView(this.pointList, this.style, {super.paint}) {
     if (pointList.length > 1) {
-      if (smooth) {
+      if (style.smooth) {
         _path = MonotoneX.addCurve(null, pointList);
       } else {
         _path = Path();
-        _path.moveTo(pointList.first.x.toDouble(), pointList.first.y.toDouble());
+        _path.moveTo(pointList.first.dx.toDouble(), pointList.first.dy.toDouble());
         for (int i = 1; i < pointList.length; i++) {
-          Point p = pointList[i];
-          _path.lineTo(p.x.toDouble(), p.y.toDouble());
+          Offset p = pointList[i];
+          _path.lineTo(p.dx.toDouble(), p.dy.toDouble());
         }
       }
     }
@@ -44,12 +30,11 @@ class LineView extends View {
     if (pointList.isEmpty) {
       return;
     }
-
+    style.fillPaint(paint);
     if (pointList.length == 1) {
-      canvas.drawPoints(PointMode.points, [Offset(pointList.first.x.toDouble(), pointList.first.y.toDouble())], paint);
+      canvas.drawPoints(PointMode.points, [Offset(pointList.first.dx.toDouble(), pointList.first.dy.toDouble())], paint);
       return;
     }
-
     canvas.drawPath(_path, paint);
   }
 }

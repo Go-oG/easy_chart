@@ -28,17 +28,17 @@ class MonotoneX {
     return path;
   }
 
-  static Path addCurve(Path? path, List<Point> points, [bool reversed = false]) {
-    List<Point> targetPoints = [];
+  static Path addCurve(Path? path, List<Offset> points, [bool reversed = false]) {
+    List<Offset> targetPoints = [];
     targetPoints.addAll(points);
-    targetPoints.add(Point(points[points.length - 1].x * 2, points[points.length - 1].y * 2));
+    targetPoints.add(Offset(points[points.length - 1].dx * 2, points[points.length - 1].dy * 2));
     double x0=0, y0=0, x1 = 0, y1 = 0, t0=0;
     path ??= Path();
     List<List<double>> arr = [];
     for (int i = 0; i < targetPoints.length; i++) {
       double t1=0;
-      double x = targetPoints[i].x.toDouble();
-      double y = targetPoints[i].y.toDouble();
+      double x = targetPoints[i].dx.toDouble();
+      double y = targetPoints[i].dy.toDouble();
       if (x == x1 && y == y1) {
         continue;
       }

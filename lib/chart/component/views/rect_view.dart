@@ -19,7 +19,12 @@ class RectView extends View {
       boxPainter.paint(canvas, Offset.zero, ImageConfiguration(size: Size(areaBounds.width, areaBounds.height)));
       return;
     }
-    double ph = animatorPercent * areaBounds.height;
-    boxPainter.paint(canvas, Offset(0, areaBounds.height - ph), ImageConfiguration(size: Size(areaBounds.width, ph)));
+    if (vertical) {
+      double ph = animatorPercent * areaBounds.height;
+      boxPainter.paint(canvas, Offset(0, areaBounds.height - ph), ImageConfiguration(size: Size(areaBounds.width, ph)));
+    } else {
+      double pw = animatorPercent * areaBounds.width;
+      boxPainter.paint(canvas, Offset.zero, ImageConfiguration(size: Size(pw, areaBounds.height)));
+    }
   }
 }

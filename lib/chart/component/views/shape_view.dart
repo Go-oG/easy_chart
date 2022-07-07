@@ -3,23 +3,20 @@ import 'package:easy_chart/chart/options/style.dart';
 import 'package:flutter/material.dart';
 
 class ShapeView extends View {
-  final ChartSymbol symbol;
-  final Color color;
-  final bool fill;
-  final double stockWidth;
+  final SymbolStyle symbolStyle;
 
-  ShapeView(this.symbol, this.color, this.fill, {this.stockWidth = 2, super.paint});
+  ShapeView(this.symbolStyle, { super.paint});
 
   @override
   void onDraw(Canvas canvas, double animatorPercent) {
-    paint.color = color;
-    paint.style = fill ? PaintingStyle.fill : PaintingStyle.stroke;
-    paint.strokeWidth = stockWidth;
-    if (symbol.type == ChartSymbol.None) {
+    if (symbolStyle.symbol.type == ChartSymbol.None) {
       return;
     }
+    symbolStyle.fillPaint(paint);
 
     Offset offset = Offset(centerX, centerY);
+
+    ChartSymbol symbol=symbolStyle.symbol;
 
     if (symbol.type == ChartSymbol.Circle) {
       canvas.drawCircle(offset, symbol.size.height, paint);

@@ -163,6 +163,7 @@ abstract class View with GestureListener {
     onDraw(canvas, animatorPercent);
   }
 
+  @protected
   void onDraw(Canvas canvas, double animatorPercent) {
     _boxPainter.paint(canvas, Offset.zero, ImageConfiguration(size: Size(width, height)));
   }
@@ -241,8 +242,10 @@ abstract class View with GestureListener {
 }
 
 /// ViewGroup
-class ViewGroup extends View implements ViewParent, ViewManager {
+abstract class ViewGroup extends View implements ViewParent, ViewManager {
   final List<View> children = [];
+
+  ViewGroup({super.paint});
 
   void clearChildren() {
     children.clear();

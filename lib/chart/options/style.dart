@@ -54,6 +54,8 @@ class LineStyle {
 
   final BoxShadow? shadow;
   final Shader? shader;
+  final bool smooth;
+  final bool close;
 
   const LineStyle(
       {this.color = Colors.black,
@@ -63,14 +65,17 @@ class LineStyle {
       this.join = StrokeJoin.bevel,
       this.dash = const [],
       this.shadow,
+      this.smooth = false,
+      this.close = false,
       this.shader});
 
   void fillPaint(Paint paint) {
-    paint.style = PaintingStyle.fill;
     paint.color = color;
     paint.strokeWidth = width.toDouble();
     paint.strokeCap = cap;
     paint.strokeJoin = join;
+    paint.style = PaintingStyle.stroke;
+    paint.strokeWidth = width;
   }
 
   Paint toPaint() {
@@ -116,10 +121,21 @@ class LineStyle {
 }
 
 class AreaStyle {
-  List<Color> color = [Colors.blue];
-  BoxShadow shadow = const BoxShadow();
+  Color color = Colors.blueAccent;
+  Shader? shader;
+  BoxShadow? shadow;
 
-  void fillPaint(Paint paint) {}
+  void fillPaint(Paint paint) {
+    paint.color = color;
+    if (shader != null) {
+      paint.shader = shader;
+    }
+    if (shadow != null) {
+      paint.color = shadow!.color;
+      paint.maskFilter = MaskFilter.blur(shadow!.blurStyle, shadow!.blurSigma);
+    }
+    paint.style = PaintingStyle.fill;
+  }
 }
 
 //描述项目自身相关的数据
@@ -127,6 +143,34 @@ class ItemStyle {
   final BoxDecoration decoration;
 
   const ItemStyle(this.decoration);
+}
+
+class SymbolStyle {
+  final ChartSymbol symbol;
+  final bool fill;
+  final Color? color;
+  final Shader? shader;
+  final double stockWidth;
+
+  SymbolStyle(this.symbol, {this.color, this.shader, this.fill = true, this.stockWidth = 2}) {
+    if (color == null && shader == null) {
+      throw FlutterError('Color 和Shader不能同时为空');
+    }
+  }
+
+  void fillPaint(Paint paint) {
+    paint.style = fill ? PaintingStyle.fill : PaintingStyle.stroke;
+    if (!fill) {
+      paint.strokeWidth = stockWidth;
+    }
+
+    if (color != null) {
+      paint.color = color!;
+    }
+    if (shader != null) {
+      paint.shader = shader!;
+    }
+  }
 }
 
 class ChartSymbol {
