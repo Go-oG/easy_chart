@@ -27,7 +27,7 @@ abstract class DescartesViewGroup<D extends DataGroup> extends ViewGroup {
       ids.add(element.id);
       XAxisView view = XAxisView(element, dataList);
       xAxisMap[element] = view;
-      addView1(view);
+      addView(view);
     }
 
     for (var element in yAxis) {
@@ -37,10 +37,10 @@ abstract class DescartesViewGroup<D extends DataGroup> extends ViewGroup {
       ids.add(element.id);
       YAxisView view = YAxisView(element, dataList);
       yAxisMap[element] = view;
-      addView1(view);
+      addView(view);
     }
     for (var element in viewList) {
-      addView1(element);
+      addView(element);
     }
   }
 

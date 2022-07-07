@@ -327,11 +327,8 @@ class ChartState<D extends DataGroup> extends State<Chart<D>> with TickerProvide
     GestureForcePressUpdateCallback? onForcePressUpdate = render.onForcePressUpdate;
     GestureForcePressEndCallback? onForcePressEnd = render.onForcePressEnd;
 
-    onLongPressDown=null;
-    onLongPressCancel=null;
-
-
-
+    onLongPressDown = null;
+    onLongPressCancel = null;
 
     bool isPhone = Platform.isIOS || Platform.isAndroid;
     if (isPhone) {
@@ -468,12 +465,10 @@ class ChartState<D extends DataGroup> extends State<Chart<D>> with TickerProvide
 }
 
 /// 渲染的基类，支持多个Render 同时渲染
-class MultiRender extends ChangeNotifier with GestureListener implements CustomPainter {
+class MultiRender extends ChangeNotifier with GestureListener implements CustomPainter, ViewParent {
   final Animation<double>? animation; //全局
   final List<View> renderList;
-
-  //记录图表占用区域的范围
-  Rect chartRect = const Rect.fromLTRB(0, 0, 0, 0);
+  bool _needReLayout = true;
 
   MultiRender(this.renderList, {this.animation}) {
     if (animation != null) {
@@ -481,16 +476,25 @@ class MultiRender extends ChangeNotifier with GestureListener implements CustomP
         notifyListeners();
       });
     }
+    for (var element in renderList) {
+      element.parent = this;
+    }
   }
 
   @override
   void paint(Canvas canvas, Size size) {
-    //先测量 获取各个Render的尺寸信息
-    for (var element in renderList) {
-      element.onMeasure(size.width, size.height);
-    }
-    for (var element in renderList) {
-      element.onLayout(0, 0, size.width, size.height);
+    if (_needReLayout) {
+      //先测量 获取各个Render的尺寸信息
+      for (var element in renderList) {
+        element.onMeasure(size.width, size.height);
+      }
+      for (var element in renderList) {
+        element.onLayout(0, 0, size.width, size.height);
+      }
+      for (var element in renderList) {
+        element.onLayoutEnd();
+      }
+      _needReLayout = false;
     }
 
     //再绘制
@@ -517,6 +521,9 @@ class MultiRender extends ChangeNotifier with GestureListener implements CustomP
     return false;
   }
 
+
+
+
   @override
   SemanticsBuilderCallback? get semanticsBuilder => null;
 
@@ -532,5 +539,35 @@ class MultiRender extends ChangeNotifier with GestureListener implements CustomP
 
   void updateUI() {
     notifyListeners();
+  }
+
+  @override
+  void changeChildToFront(View child) {}
+
+  @override
+  void clearChildFocus(View child) {}
+
+  @override
+  void focusableViewAvailable(View v) {}
+
+  @override
+  bool getChildVisibleRect(View child, Rect r, Offset offset) {
+    return true;
+  }
+
+  @override
+  ViewParent? getParent() {
+    return null;
+  }
+
+  @override
+  void invalidate() {
+    updateUI();
+  }
+
+  @override
+  void requestLayout() {
+    _needReLayout = true;
+    updateUI();
   }
 }

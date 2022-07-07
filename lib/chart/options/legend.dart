@@ -66,7 +66,7 @@ class LegendItem {
   TextStyle textStyle = const TextStyle();
   TextStyle textClosedStyle = const TextStyle();
   TextStyle textSelectedStyle = const TextStyle();
-  ChartSymbol symbol = const ChartSymbol.rect();
+  ChartSymbol symbol =  ChartSymbol.rect;
 
   num gap = 10;
 

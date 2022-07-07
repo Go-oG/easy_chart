@@ -6,34 +6,8 @@ import 'package:flutter/material.dart';
 
 import 'gesture.dart';
 
-class LayoutParams {
-  static const int MATCH_PARENT = -1;
-  static const int WRAP_CONTENT = -2;
-
-  late int width;
-  late int height;
-
-  LayoutParams(this.width, this.height);
-
-  LayoutParams.from(LayoutParams source) : this(source.width, source.height);
-
-  void resolveLayoutDirection(int layoutDirection) {}
-
-  static String sizeToString(int size) {
-    if (size == WRAP_CONTENT) {
-      return "wrap-content";
-    }
-    if (size == MATCH_PARENT) {
-      return "match-parent";
-    }
-    return size.toString();
-  }
-}
-
 abstract class ViewManager {
-  void addView(View view, LayoutParams params);
-
-  void updateViewLayout(View view, LayoutParams params);
+  void addView(View view);
 
   void removeView(View view);
 }
@@ -45,10 +19,6 @@ abstract class ViewParent {
 
   ViewParent? getParent();
 
-  void requestChildFocus(View child, View focused);
-
-  void recomputeViewAttributes(View child);
-
   void clearChildFocus(View child);
 
   bool getChildVisibleRect(View child, Rect r, Offset offset);
@@ -56,6 +26,7 @@ abstract class ViewParent {
   void changeChildToFront(View child);
 
   void focusableViewAvailable(View v);
+
 }
 
 /// 所有Chart 组件的基类(例如坐标轴、绘制的图形)
@@ -74,8 +45,6 @@ abstract class View with GestureListener {
   Rect boundRect = const Rect.fromLTRB(0, 0, 0, 0);
   Rect? clipRect;
 
-  @protected
-  LayoutParams layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
   EdgeInsetsGeometry padding = EdgeInsets.zero;
   EdgeInsetsGeometry margin = EdgeInsets.zero;
 
@@ -91,9 +60,12 @@ abstract class View with GestureListener {
 
   bool hovered = false;
 
-  BoxDecoration backgroundStyle = const BoxDecoration(color: Colors.white);
-  late BoxPainter _boxPainter;
+  BoxDecoration? backgroundStyle;
+
+  BoxPainter? _boxPainter;
+
   BoxDecoration? foregroundStyle;
+  BoxPainter? _foregroundPainter;
 
   ViewParent? parent;
 
@@ -122,7 +94,12 @@ abstract class View with GestureListener {
     } else {
       this.paint = Paint();
     }
-    _boxPainter = backgroundStyle.createBoxPainter();
+    if (backgroundStyle != null) {
+      _boxPainter = backgroundStyle!.createBoxPainter();
+    }
+    if (foregroundStyle != null) {
+      _foregroundPainter = foregroundStyle!.createBoxPainter();
+    }
   }
 
   @mustCallSuper
@@ -160,13 +137,13 @@ abstract class View with GestureListener {
   double get centerY => height / 2.0;
 
   void draw(Canvas canvas, double animatorPercent) {
+    ImageConfiguration configuration = ImageConfiguration(size: Size(width, height));
+    _boxPainter?.paint(canvas, Offset.zero, configuration);
     onDraw(canvas, animatorPercent);
+    _foregroundPainter?.paint(canvas, Offset.zero, configuration);
   }
 
-  @protected
-  void onDraw(Canvas canvas, double animatorPercent) {
-    _boxPainter.paint(canvas, Offset.zero, ImageConfiguration(size: Size(width, height)));
-  }
+  void onDraw(Canvas canvas, double animatorPercent){}
 
   //返回其矩形边界
   Rect get areaBounds => boundRect;
@@ -178,10 +155,6 @@ abstract class View with GestureListener {
 
   void invalidate() {
     parent?.invalidate();
-  }
-
-  void requestMeasure() {
-    parent?.requestLayout();
   }
 
   void requestLayout() {
@@ -208,15 +181,6 @@ abstract class View with GestureListener {
     _pivot = pivot;
   }
 
-  setLayoutParams(LayoutParams params) {
-    layoutParams = params;
-    //  resolveLayoutParams();
-    if (parent is ViewGroup) {
-      //    ( parent as ViewGroup).onSetLayoutParams(this, params);
-    }
-    requestLayout();
-  }
-
   Offset? getPivot() {
     return _pivot;
   }
@@ -236,9 +200,6 @@ abstract class View with GestureListener {
 
   void onScrollChanged(double l, double t, double oldl, double oldt) {}
 
-  LayoutParams getLayoutParams() {
-    return layoutParams;
-  }
 }
 
 /// ViewGroup
@@ -247,46 +208,28 @@ abstract class ViewGroup extends View implements ViewParent, ViewManager {
 
   ViewGroup({super.paint});
 
-  void clearChildren() {
-    children.clear();
-  }
-
-  void addView1(View child) {
-    addView2(child, -1);
-  }
-
-  void addView2(View child, int index) {
-    LayoutParams? params = child.getLayoutParams();
-    if (params == null) {
-      params = generateDefaultLayoutParams();
-      if (params == null) {
-        throw FlutterError("generateDefaultLayoutParams() cannot return null  ");
-      }
+  @override
+  void changeChildToFront(View child) {
+   int index= children.indexOf(child);
+    if(index!=-1){
+      children.removeAt(index);
     }
-    addView4(child, index, params);
-  }
-
-  void addView3(View child, int width, int height) {
-    final LayoutParams params = generateDefaultLayoutParams();
-    params.width = width;
-    params.height = height;
-    addView4(child, -1, params);
-  }
-
-  void addView4(View child, int index, LayoutParams params) {
+    _addViewInner(child, -1);
     requestLayout();
-    invalidate();
-    _addViewInner(child, index, params, false);
   }
 
   @override
-  void changeChildToFront(View child) {}
+  void clearChildFocus(View child) {
+    child.focused=false;
+    invalidate();
+  }
 
   @override
-  void clearChildFocus(View child) {}
-
-  @override
-  void focusableViewAvailable(View v) {}
+  void focusableViewAvailable(View v) {
+    v.focusable=true;
+    v.focused=true;
+    invalidate();
+  }
 
   @override
   bool getChildVisibleRect(View child, Rect r, Offset offset) {
@@ -300,6 +243,8 @@ abstract class ViewGroup extends View implements ViewParent, ViewManager {
 
   @override
   void draw(Canvas canvas, double animatorPercent) {
+    ImageConfiguration configuration = ImageConfiguration(size: Size(width, height));
+    _boxPainter?.paint(canvas, Offset.zero, configuration);
     onDraw(canvas, animatorPercent);
 
     for (var element in children) {
@@ -313,39 +258,31 @@ abstract class ViewGroup extends View implements ViewParent, ViewManager {
         throw FlutterError('you should call canvas.restore when after call canvas.save');
       }
     }
+
+    _foregroundPainter?.paint(canvas, Offset.zero, configuration);
   }
 
   @override
-  void recomputeViewAttributes(View child) {}
-
-  @override
-  void removeView(View view) {}
-
-  @override
-  void requestChildFocus(View child, View focused) {}
-
-  @override
-  void updateViewLayout(View view, LayoutParams params) {}
-
-  @override
-  void addView(View view, LayoutParams params) {
-    addView4(view, -1, params);
+  void removeView(View view) {
+    children.remove(view);
   }
 
-  LayoutParams generateDefaultLayoutParams() {
-    return LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+  @override
+  void addView(View view) {
+    addView2(view, -1);
   }
 
-  void _addViewInner(View child, int index, LayoutParams params, bool preventRequestLayout) {
+  void addView2(View child, int index) {
+    requestLayout();
+    invalidate();
+    _addViewInner(child, index);
+  }
+
+  void _addViewInner(View child, int index) {
     if (child.parent != null) {
       throw FlutterError("The specified child already has a parent. " + "You must call removeView() on the child's parent first.");
     }
-    if (preventRequestLayout) {
-      child.layoutParams = params;
-    } else {
-      child.setLayoutParams(params);
-    }
-
+    child.parent=this;
     _addInArray(child, index);
   }
 
@@ -364,5 +301,9 @@ abstract class ViewGroup extends View implements ViewParent, ViewManager {
     children.addAll(first);
     children.add(child);
     children.addAll(end);
+  }
+
+  void clearChildren() {
+    children.clear();
   }
 }

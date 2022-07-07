@@ -1,6 +1,6 @@
 import 'package:flutter/gestures.dart';
 
-class GestureListener {
+abstract class GestureListener {
   void onTapDown(TapDownDetails details) {
     print('onTapDown:$details');
   }

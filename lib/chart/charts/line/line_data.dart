@@ -4,7 +4,7 @@ import 'package:easy_chart/chart/options/style.dart';
 class LineGroup extends DataGroup {
   final bool roundCap;
   final List<int>? lineDash;
-  final bool stack;
+  final String stackGroup;//用于实现不同的分组,如果为空则为单独的一族
   final StackStrategy stackStrategy;
   final LineStyle lineStyle;
   final AreaStyle? areaStyle;
@@ -14,7 +14,7 @@ class LineGroup extends DataGroup {
       super.xAxisId,
       super.yAxisId,
       super.dataList, {
-        this.stack = false,
+        this.stackGroup = '',
         this.stackStrategy = StackStrategy.all,
         this.roundCap = false,
         this.lineDash,

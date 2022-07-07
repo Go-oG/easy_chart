@@ -70,6 +70,7 @@ class XAxisView<D extends DataGroup> extends BaseAxisView<XAxis, D> {
     if (axisLine.style.dash.isNotEmpty) {
       path = axisLine.style.getPath(path);
     }
+
     paint.style = PaintingStyle.stroke; // 对于线段只能是 stroke
     canvas.drawPath(path, paint);
   }

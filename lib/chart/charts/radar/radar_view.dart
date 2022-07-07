@@ -177,14 +177,14 @@ class RadarItemView extends ViewGroup {
       AreaView areaView = AreaView(path, areaStyle!);
       areaView.onMeasure(width, height);
       areaView.onLayout(0, 0, width, height);
-      addView1(areaView);
+      addView(areaView);
     }
 
     if (lineStyle != null) {
       LineView lineView = LineView(offsetList, lineStyle!, paint: paint);
       lineView.onMeasure(width, height);
       lineView.onLayout(0, 0, width, height);
-      addView1(lineView);
+      addView(lineView);
     }
 
     if (!showSymbol || symbolStyle == null) {
@@ -193,13 +193,13 @@ class RadarItemView extends ViewGroup {
 
     for (Offset offset in offsetList) {
       ShapeView shapeView = ShapeView(symbolStyle!, paint: paint);
-      shapeView.onMeasure(symbolStyle!.symbol.size.width, symbolStyle!.symbol.size.height);
-      double left = offset.dx - symbolStyle!.symbol.size.width / 2;
-      double top = offset.dx - symbolStyle!.symbol.size.height / 2;
-      double right = offset.dx + symbolStyle!.symbol.size.width / 2;
-      double bottom = offset.dx + symbolStyle!.symbol.size.height / 2;
+      shapeView.onMeasure(symbolStyle!.size.width, symbolStyle!.size.height);
+      double left = offset.dx - symbolStyle!.size.width / 2;
+      double top = offset.dx - symbolStyle!.size.height / 2;
+      double right = offset.dx + symbolStyle!.size.width / 2;
+      double bottom = offset.dx + symbolStyle!.size.height / 2;
       shapeView.onLayout(left,top,right,bottom);
-      addView1(shapeView);
+      addView(shapeView);
     }
   }
 

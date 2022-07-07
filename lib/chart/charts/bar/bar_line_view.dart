@@ -2,14 +2,13 @@ import 'package:easy_chart/chart/charts/bar/bar_data.dart';
 import 'package:easy_chart/chart/component/views/line_view.dart';
 import 'package:easy_chart/chart/charts/radar/radar_view.dart';
 import 'package:easy_chart/chart/component/views/rect_view.dart';
-import 'package:easy_chart/chart/component/views/shape_view.dart';
 import 'package:easy_chart/chart/core/chart_view.dart';
 import 'package:easy_chart/chart/core/data_group.dart';
 import 'package:easy_chart/chart/options/axis.dart';
 import 'package:easy_chart/chart/options/string_number.dart';
 import 'package:easy_chart/chart/options/style.dart';
 import 'package:flutter/material.dart';
-
+/// 标准笛卡尔坐标系下的柱状图，适用于bar、line
 class BarLineChartView extends ViewGroup {
   //给定数据使用的坐标轴
   final XAxis xAxis;
@@ -30,7 +29,7 @@ class BarLineChartView extends ViewGroup {
     RadarView view =
         RadarView(6, 4, areaColors: [Colors.blueGrey, Colors.teal, Colors.lightGreen, Colors.deepPurple], paint: paint);
     view.onLayout(0, 0, width, height);
-    addView1(view);
+    addView(view);
   }
 
   void _layoutForCategory() {
@@ -159,7 +158,7 @@ class BarLineChartView extends ViewGroup {
           RectView view = RectView(point.itemStyle.decoration, paint: paint);
           view.onMeasure(0, 0);
           view.onLayout(offset, boundRect.height - height, offset + widthList[j], boundRect.height);
-          addView1(view);
+          addView(view);
         }
       }
     }
@@ -182,20 +181,10 @@ class BarLineChartView extends ViewGroup {
       }
 
       LineStyle style = element.lineStyle;
-      LineView lineCanvas = LineView(pl, style,paint: paint);
+      LineView lineCanvas = LineView(pl, style,paint: paint,showSymbol: style.symbolStyle!=null);
       lineCanvas.onMeasure(areaBounds.width, areaBounds.height);
       lineCanvas.onLayout(0, 0, areaBounds.width, areaBounds.height);
-      addView1(lineCanvas);
-
-      // for (var element in pl) {
-      //   double x = element.dx.toDouble();
-      //   double y = element.dy.toDouble();
-      //   ShapeView sv = ShapeView(const ChartSymbol.pin(), Colors.brown, true);
-      //   Size svSize = sv.symbol.size;
-      //   sv.onMeasure(areaBounds.width, areaBounds.height);
-      //   sv.onLayout(x - svSize.width / 2, y - svSize.height / 2, x + svSize.width / 2, y + svSize.height / 2);
-      //   addView1(sv);
-      // }
+      addView(lineCanvas);
 
     }
   }

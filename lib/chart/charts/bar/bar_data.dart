@@ -27,7 +27,7 @@ class BarGroup extends LineGroup {
     this.barMinAngle = 0,
     this.barGap = const SNumber.percent(30),
     this.barCategoryGap = const SNumber.percent(20),
-    super.stack = false,
+    super.stackGroup = '',
     super.stackStrategy = StackStrategy.all,
     this.realtimeSort = false,
     super.roundCap = false,

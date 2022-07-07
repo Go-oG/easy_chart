@@ -1,16 +1,21 @@
-import 'dart:math';
 import 'dart:ui';
+import 'package:easy_chart/chart/component/views/shape_view.dart';
 import 'package:easy_chart/chart/core/chart_view.dart';
 import 'package:easy_chart/chart/options/style.dart';
 import 'package:easy_chart/chart/utils/monotonex.dart';
+import 'package:flutter/material.dart';
 
-class LineView extends View {
+class LineView extends ViewGroup {
   final List<Offset> pointList;
   final LineStyle style;
-
+  final bool showSymbol;
+  final SymbolStyle? symbolStyle;
   late Path _path;
 
-  LineView(this.pointList, this.style, {super.paint}) {
+  LineView(this.pointList, this.style, {this.showSymbol = false, this.symbolStyle, super.paint}) {
+    if (showSymbol && symbolStyle == null) {
+      throw FlutterError('当需要显示Symbol时，symbolStyle必须不为空');
+    }
     if (pointList.length > 1) {
       if (style.smooth) {
         _path = MonotoneX.addCurve(null, pointList);
@@ -26,15 +31,34 @@ class LineView extends View {
   }
 
   @override
+  @mustCallSuper
+  void onLayout(double left, double top, double right, double bottom) {
+    super.onLayout(left, top, right, bottom);
+    if (!showSymbol) {
+      return;
+    }
+    SymbolStyle tmpStyle = symbolStyle!;
+    Size size = tmpStyle.size;
+    for (var element in pointList) {
+      ShapeView shapeView = ShapeView(tmpStyle, paint: paint);
+      shapeView.onMeasure(size.width, size.height);
+      shapeView.onLayout(
+          element.dx - size.width / 2, element.dy - size.height / 2, element.dx + size.width / 2, element.dy + size.height / 2);
+      addView(shapeView);
+    }
+  }
+
+  @override
   void onDraw(Canvas canvas, double animatorPercent) {
+    super.onDraw(canvas, animatorPercent);
     if (pointList.isEmpty) {
       return;
     }
     style.fillPaint(paint);
     if (pointList.length == 1) {
       canvas.drawPoints(PointMode.points, [Offset(pointList.first.dx.toDouble(), pointList.first.dy.toDouble())], paint);
-      return;
+    } else {
+      canvas.drawPath(_path, paint);
     }
-    canvas.drawPath(_path, paint);
   }
 }

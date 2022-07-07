@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 
 enum AxisSymbol { none, single, double }
 
-enum AxisLineType { solid }
-
 enum OverFlow {
   cut,
   newLine;
@@ -40,34 +38,30 @@ enum Position {
 
 enum Direction { horizontal, vertical }
 
+/// 线段样式
 class LineStyle {
   final Color color;
-
   final double width;
-
-  final AxisLineType type;
-
   final StrokeCap cap;
-
   final StrokeJoin join;
   final List<double> dash;
-
   final BoxShadow? shadow;
   final Shader? shader;
   final bool smooth;
   final bool close;
+  final SymbolStyle? symbolStyle;
 
   const LineStyle(
       {this.color = Colors.black,
-      this.width = 2,
-      this.type = AxisLineType.solid,
+      this.width = 1,
       this.cap = StrokeCap.round,
       this.join = StrokeJoin.bevel,
       this.dash = const [],
       this.shadow,
       this.smooth = false,
       this.close = false,
-      this.shader});
+      this.shader,
+      this.symbolStyle});
 
   void fillPaint(Paint paint) {
     paint.color = color;
@@ -76,20 +70,6 @@ class LineStyle {
     paint.strokeJoin = join;
     paint.style = PaintingStyle.stroke;
     paint.strokeWidth = width;
-  }
-
-  Paint toPaint() {
-    Paint paint;
-    if (shadow != null) {
-      paint = shadow!.toPaint();
-    } else {
-      paint = Paint();
-    }
-    fillPaint(paint);
-    if (shadow != null) {
-      paint.color = shadow!.color;
-    }
-    return paint;
   }
 
   Path getPath(Path originalPath) {
@@ -120,13 +100,22 @@ class LineStyle {
   }
 }
 
+/// 区域样式
 class AreaStyle {
-  Color color = Colors.blueAccent;
-  Shader? shader;
-  BoxShadow? shadow;
+  final Color? color;
+  final Shader? shader;
+  final BoxShadow? shadow;
+
+  AreaStyle({this.color=Colors.deepPurple, this.shader, this.shadow}) {
+    if (color == null && shader == null && shadow == null) {
+      throw FlutterError('color、shader、shadow不能同时为空');
+    }
+  }
 
   void fillPaint(Paint paint) {
-    paint.color = color;
+    if (color != null) {
+      paint.color = color!;
+    }
     if (shader != null) {
       paint.shader = shader;
     }
@@ -138,21 +127,29 @@ class AreaStyle {
   }
 }
 
-//描述项目自身相关的数据
-class ItemStyle {
-  final BoxDecoration decoration;
-
-  const ItemStyle(this.decoration);
-}
-
+/// 符号描述
 class SymbolStyle {
   final ChartSymbol symbol;
   final bool fill;
+
   final Color? color;
   final Shader? shader;
   final double stockWidth;
+  final Size size;
+  final double rotate;
+  final bool keepAspect = false;
+  final Offset offset;
 
-  SymbolStyle(this.symbol, {this.color, this.shader, this.fill = true, this.stockWidth = 2}) {
+  SymbolStyle(
+    this.symbol, {
+    this.color,
+    this.shader,
+    this.fill = true,
+    this.stockWidth = 2,
+    this.size = const Size(4, 4),
+    this.rotate = 0,
+    this.offset = Offset.zero,
+  }) {
     if (color == null && shader == null) {
       throw FlutterError('Color 和Shader不能同时为空');
     }
@@ -173,42 +170,31 @@ class SymbolStyle {
   }
 }
 
+/// 符号枚举
 class ChartSymbol {
-  static const String Circle = 'circle';
-  static const String EmptyCircle = 'emptyCircle';
-  static const String Rect = 'rect';
-  static const String RoundRect = 'roundRect';
-  static const String Triangle = 'triangle';
-  static const String Diamond = 'diamond';
-  static const String Pin = 'pin';
-  static const String Arrow = 'arrow';
-  static const String None = 'none';
+  static const String _circle = 'circle';
+  static const String _emptyCircle = 'emptyCircle';
+  static const String _rect = 'rect';
+  static const String _roundRect = 'roundRect';
+  static const String _triangle = 'triangle';
+  static const String _diamond = 'diamond';
+  static const String _pin = 'pin';
+  static const String _arrow = 'arrow';
+  static const String _none = 'none';
 
   final String type;
-  final Size size;
-  final double rotate;
-  final bool keepAspect = false;
-  final Offset offset;
 
-  const ChartSymbol(this.type, {this.size = const Size(6, 6), this.rotate = 0, this.offset = Offset.zero});
+  const ChartSymbol(this.type);
 
-  const ChartSymbol.circle({this.size = const Size(6, 6), this.rotate = 0, this.offset = Offset.zero}) : type = Circle;
-
-  const ChartSymbol.emptyCircle({this.size = const Size(6, 6), this.rotate = 0, this.offset = Offset.zero}) : type = EmptyCircle;
-
-  const ChartSymbol.rect({this.size = const Size(6, 6), this.rotate = 0, this.offset = Offset.zero}) : type = Rect;
-
-  const ChartSymbol.roundRect({this.size = const Size(6, 6), this.rotate = 0, this.offset = Offset.zero}) : type = RoundRect;
-
-  const ChartSymbol.triangle({this.size = const Size(6, 6), this.rotate = 0, this.offset = Offset.zero}) : type = Triangle;
-
-  const ChartSymbol.diamond({this.size = const Size(6, 6), this.rotate = 0, this.offset = Offset.zero}) : type = Diamond;
-
-  const ChartSymbol.pin({this.size = const Size(6, 6), this.rotate = 0, this.offset = Offset.zero}) : type = Pin;
-
-  const ChartSymbol.arrow({this.size = const Size(6, 6), this.rotate = 0, this.offset = Offset.zero}) : type = Arrow;
-
-  const ChartSymbol.none({this.size = const Size(6, 6), this.rotate = 0, this.offset = Offset.zero}) : type = None;
+  static const ChartSymbol circle = ChartSymbol(_circle);
+  static const ChartSymbol emptyCircle = ChartSymbol(_emptyCircle);
+  static const ChartSymbol rect = ChartSymbol(_rect);
+  static const ChartSymbol roundRect = ChartSymbol(_roundRect);
+  static const ChartSymbol triangle = ChartSymbol(_triangle);
+  static const ChartSymbol diamond = ChartSymbol(_diamond);
+  static const ChartSymbol pin = ChartSymbol(_pin);
+  static const ChartSymbol arrow = ChartSymbol(_arrow);
+  static const ChartSymbol none = ChartSymbol(_none);
 
   @override
   String toString() {
@@ -227,6 +213,13 @@ class ChartSymbol {
     }
     return false;
   }
+}
+
+//描述项目自身相关的数据
+class ItemStyle {
+  final BoxDecoration decoration;
+
+  const ItemStyle(this.decoration);
 }
 
 class DashedPathProperties {
