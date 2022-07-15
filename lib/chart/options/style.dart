@@ -50,7 +50,7 @@ enum Position {
 
 enum Direction { horizontal, vertical }
 
-enum AnimatorDirection{
+enum AnimatorDirection {
   ste,
   ets,
 }
@@ -121,7 +121,7 @@ class AreaStyle {
   final Shader? shader;
   final BoxShadow? shadow;
 
-  AreaStyle({this.color=Colors.deepPurple, this.shader, this.shadow}) {
+  AreaStyle({this.color = Colors.deepPurple, this.shader, this.shadow}) {
     if (color == null && shader == null && shadow == null) {
       throw FlutterError('color、shader、shadow不能同时为空');
     }
@@ -232,8 +232,10 @@ class ChartSymbol {
 //描述项目自身相关的数据
 class ItemStyle {
   final BoxDecoration decoration;
+  final Color color;
+  final BorderSide borderSide;
 
-  const ItemStyle(this.decoration);
+  const ItemStyle(this.decoration, {this.color = Colors.blue, this.borderSide = const BorderSide(width: 0, color: Colors.transparent)});
 }
 
 class DashedPathProperties {

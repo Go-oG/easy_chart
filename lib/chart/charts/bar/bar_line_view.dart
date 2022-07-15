@@ -10,7 +10,6 @@ import 'package:easy_chart/chart/core/data_group.dart';
 import 'package:easy_chart/chart/options/axis.dart';
 import 'package:easy_chart/chart/options/axis_line.dart';
 import 'package:easy_chart/chart/options/label.dart';
-import 'package:easy_chart/chart/options/radar.dart';
 import 'package:easy_chart/chart/options/string_number.dart';
 import 'package:easy_chart/chart/options/style.dart';
 import 'package:flutter/material.dart';
@@ -71,28 +70,45 @@ class BarLineChartView extends ViewGroup {
   }
 
   void _testRadar() {
-    List<RadarIndicator> indicatorList=[];
-    for (int i = 0; i < 6; i++) {
+    List<RadarIndicator> indicatorList = [];
+    for (int i = 0; i < 3; i++) {
       indicatorList.add(RadarIndicator('indicator$i', 100));
     }
 
-    Radar radar = Radar('123',indicatorList);
+    RadarAxis radarAxis = RadarAxis('123', indicatorList,splitNumber: 3,
+        radius: const SNumber.percent(100),
+        axisLine: const AxisLine(
+          style: LineStyle(color: Colors.black26, width: 2),
+        ),
+        styleList: const [
+          ItemStyle(
+            BoxDecoration(),
+            color: Colors.blueGrey,
+          ),
+          ItemStyle(
+            BoxDecoration(),
+            color: Colors.black26,
+          ),
+          ItemStyle(
+            BoxDecoration(),
+            color: Colors.blueAccent,
+          ),
+        ]);
 
     List<RadarData> dl = [];
     for (int i = 0; i < 1; i++) {
       List<double> list = [];
       math.Random random = math.Random();
-      for (int j = 0; j < 6; j++) {
+      for (int j = 0; j < 3; j++) {
         list.add(random.nextDouble() * 50);
       }
-      RadarData radarData = RadarData(
-        list,
-        areaStyle: AreaStyle(color: Colors.deepPurple),
-        lineStyle: LineStyle(color: Colors.deepPurple,width: 2),
-      );
+
+      RadarData radarData = RadarData(list,
+          lineStyle: const LineStyle(color: Colors.orangeAccent, width: 2),
+          symbolStyle: SymbolStyle(ChartSymbol.circle, color: Colors.lightGreen));
       dl.add(radarData);
     }
-    RadarSeries series = RadarSeries(radar, dl);
+    RadarSeries series = RadarSeries(radarAxis, dl);
     RadarChartView chartView = RadarChartView(series, paint: paint);
     chartView.onLayout(0, 0, width, height);
     addView(chartView);

@@ -9,6 +9,7 @@ import 'axis_polar.dart';
 import 'legend.dart';
 import 'title.dart';
 
+
 class ChartConfig {
   ChartTitle? title;
   Legend? legend;
@@ -16,9 +17,7 @@ class ChartConfig {
   //用于笛卡尔坐标系的相关坐标轴
   List<XAxis> xAxis = [];
   List<YAxis> yAxis = [];
-
   PolarAxis? polarAxis;//用于极坐标系
-  Radar? radar;
   ChartAnimation animation = ChartAnimation();
   Decoration? decoration;
   EdgeInsetsGeometry padding = EdgeInsets.zero;

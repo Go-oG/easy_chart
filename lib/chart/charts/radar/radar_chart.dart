@@ -3,10 +3,8 @@ import 'dart:math' as math;
 import 'package:easy_chart/chart/charts/radar/radar_series.dart';
 import 'package:easy_chart/chart/component/views/area_view.dart';
 import 'package:easy_chart/chart/component/views/line_view.dart';
-import 'package:easy_chart/chart/component/views/shape_view.dart';
 import 'package:easy_chart/chart/core/chart_view.dart';
-import 'package:easy_chart/chart/options/axis_line.dart';
-import 'package:easy_chart/chart/options/radar.dart';
+import 'package:easy_chart/chart/options/style.dart';
 import 'package:easy_chart/chart/utils/paint_util.dart';
 import 'package:flutter/material.dart';
 
@@ -15,22 +13,13 @@ class RadarChartView extends ViewGroup {
   final RadarSeries series;
 
   RadarChartView(this.series, {super.paint, super.zIndex = 0}) {
-    Radar radar = series.radar;
-    int axisCount = radar.indicatorList.length;
-    int splitCount = radar.splitNumber;
-    bool circle = radar.shape == RadarShape.circle;
-    double offsetAngle = radar.offsetAngle;
+    RadarAxis radarAxis = series.radar;
+    int axisCount = radarAxis.indicatorList.length;
+    double offsetAngle = radarAxis.offsetAngle;
 
     //添加轴视图
-    if (radar.show) {
-      RadarAxisView axisView = RadarAxisView(
-        axisCount,
-        splitCount,
-        radar.axisLine,
-        circle: circle,
-        offsetAngle: offsetAngle,
-        areaColors: radar.areaColorList,
-      );
+    if (radarAxis.show) {
+      RadarAxisView axisView = RadarAxisView(radarAxis);
       addView(axisView);
     }
 
@@ -38,41 +27,34 @@ class RadarChartView extends ViewGroup {
     List<double> minDataList = List.filled(axisCount, 0, growable: true);
 
     for (int i = 0; i < axisCount; i++) {
-      maxDataList[i] = radar.indicatorList[i].max;
-      minDataList[i] = radar.indicatorList[i].min;
+      maxDataList[i] = radarAxis.indicatorList[i].max;
+      minDataList[i] = radarAxis.indicatorList[i].min;
     }
-
     for (var element in series.dataList) {
-      RadarChildView childView = RadarChildView(element, axisCount, maxDataList, minDataList, offsetAngle, paint: paint);
+      RadarChildView childView = RadarChildView(radarAxis, element, axisCount, maxDataList, minDataList, offsetAngle, paint: paint);
       addView(childView);
+    }
+  }
+
+  @override
+  @mustCallSuper
+  void onLayout(double left, double top, double right, double bottom) {
+    super.onLayout(left, top, right, bottom);
+    RadarAxis axis = series.radar;
+    double cx = axis.center[0].convert(width);
+    double cy = axis.center[1].convert(height);
+    double radius = 0.5*axis.radius.convert(math.min(width, height));
+    for (var element in children) {
+      element.onLayout(cx - radius, cy - radius, cx + radius, cy + radius);
     }
   }
 }
 
 /// 雷达图坐标轴视图
 class RadarAxisView extends View {
-  final int axisCount;
-  final int splitCount;
+  final RadarAxis axis;
 
-  /// 坐标轴是否是圆形视图
-  final bool circle;
-
-  /// 旋转偏移量
-  final double offsetAngle;
-  final List<Color> areaColors;
-
-  /// 坐标轴
-  final AxisLine axisLine;
-
-  RadarAxisView(
-    this.axisCount,
-    this.splitCount,
-    this.axisLine, {
-    this.circle = false,
-    this.offsetAngle = 0,
-    this.areaColors = const [],
-    super.paint,
-  });
+  RadarAxisView(this.axis, {super.paint, super.zIndex});
 
   /// 存储点坐标
   final List<List<Offset>> _pointList = [];
@@ -91,58 +73,61 @@ class RadarAxisView extends View {
   @override
   @protected
   void onDraw(Canvas canvas, double animatorPercent) {
-    if(!axisLine.show){
-      return;
-    }
     canvas.translate(centerX, centerY);
-    double singleHeight = 0.5 * math.min(height, width) / splitCount;
-    double singleAngle = 360 / axisCount;
+    double singleHeight = 0.5 * math.min(height, width) / axis.splitNumber;
 
-    //绘制背景 应该倒序
-    if (areaColors.isNotEmpty) {
+    Path path = Path();
+    for (int i = _pointList.length - 1; i >= 0; i--) {
+      if (axis.styleList.isEmpty || i >= axis.styleList.length) {
+        continue;
+      }
+
+      ItemStyle style = axis.styleList[i];
+      path.reset();
+
+      //计算路径
+      List<Offset> list = _pointList[i];
+      if (axis.shape == RadarShape.circle) {
+        path.addArc(Rect.fromCircle(center: Offset.zero, radius: singleHeight * i), 0, 2 * math.pi);
+      } else {
+        path.moveTo(list[0].dx, list[0].dy);
+        for (var element in list) {
+          path.lineTo(element.dx, element.dy);
+        }
+        path.close();
+      }
+
+      //绘制背景
       paint.reset();
       paint.style = PaintingStyle.fill;
-      for (int i = _pointList.length - 1; i >= 0; i--) {
-        paint.color = areaColors[i];
-        List<Offset> list = _pointList[i];
-        if (circle) {
-          canvas.drawCircle(Offset.zero, singleHeight * i, paint);
-        } else {
-          Path path = Path();
-          path.moveTo(list[0].dx, list[0].dy);
-          for (var element in list) {
-            path.lineTo(element.dx, element.dy);
-          }
-          path.close();
-          canvas.drawPath(path, paint);
-        }
+      paint.color = style.color;
+      canvas.drawPath(path, paint);
+
+      //绘制边框
+      if (style.borderSide.width > 0) {
+        paint.style = PaintingStyle.stroke;
+        paint.strokeWidth = style.borderSide.width;
+        paint.color = style.borderSide.color;
+        canvas.drawPath(path, paint);
       }
     }
 
     //绘制轴线
-    paint.reset();
-    axisLine.style.fillPaint(paint);
-    Path path = Path();
-    for (int i = 0; i < axisCount; i++) {
-      double angle = offsetAngle - 90 + i * singleAngle;
-      double radians = angle * math.pi / 180;
-      double th = 0.5 * math.min(height, width);
-      double x = th * math.cos(radians);
-      double y = th * math.sin(radians);
-      if (i == 0) {
-        path.moveTo(x, y);
-      } else {
-        path.lineTo(x, y);
+    if (axis.axisLine != null && axis.axisLine!.show) {
+      paint.reset();
+      axis.axisLine!.style.fillPaint(paint);
+      for (int i = 0; i < axis.indicatorList.length; i++) {
+        canvas.drawLine(Offset.zero, _pointList[_pointList.length - 1][i], paint);
       }
     }
-    path.close();
-    canvas.drawPath(path, paint);
   }
 
   void _computePointIfNeed() {
     if (!_needComputePoint && _pointList.isNotEmpty) {
       return;
     }
+    int axisCount = axis.indicatorList.length;
+    int splitCount = axis.splitNumber;
 
     _pointList.clear();
     double singleHeight = 0.5 * math.min(height, width) / splitCount;
@@ -151,7 +136,7 @@ class RadarAxisView extends View {
       _pointList.add([]);
     }
     for (int i = 0; i < axisCount; i++) {
-      double angle = offsetAngle - 90 + i * singleAngle;
+      double angle = axis.offsetAngle - 90 + i * singleAngle;
       double radians = angle * math.pi / 180;
       for (int j = 0; j < splitCount; j++) {
         double th = (j + 1) * singleHeight;
@@ -163,22 +148,20 @@ class RadarAxisView extends View {
     }
     _needComputePoint = false;
   }
-
 }
 
 /// 雷达图子View
 class RadarChildView extends ViewGroup {
+  final RadarAxis axis;
   final RadarData data;
   final List<double> maxDataList;
   final List<double> minDataList;
   final int axisCount;
   final double offsetAngle;
-
-  /// 绘制视图
-  final Path _path = Path();
-  final List<Offset> _offsetList = [];
+  final List<Offset> _pointList = []; //存储坐标点
 
   RadarChildView(
+    this.axis,
     this.data,
     this.axisCount,
     this.maxDataList,
@@ -191,10 +174,11 @@ class RadarChildView extends ViewGroup {
   @mustCallSuper
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
-    _offsetList.clear();
+    _pointList.clear();
     clearChildren();
     double itemAngle = 360 / axisCount;
     double radius = 0.5 * math.min(height, width);
+
     for (int i = 0; i < axisCount; i++) {
       double d = 0;
       if (i < data.dataList.length) {
@@ -208,28 +192,18 @@ class RadarChildView extends ViewGroup {
         offset = Offset(radius, radius);
       } else {
         double percent = (d - minDataList[i]) / (maxDataList[i] - minDataList[i]);
-        print('radar Percent:$percent  $d  ${maxDataList[i]}  ${minDataList[i]}');
         double length = percent * radius;
         double x = length * math.cos(radians);
         double y = length * math.sin(radians);
         offset = Offset(x + centerX, y + centerY);
       }
-      _offsetList.add(offset);
+      _pointList.add(offset);
     }
 
-    if (_offsetList.length > 1) {
-      _path.moveTo(_offsetList[0].dx, _offsetList[0].dy);
-      for (int i = 1; i < _offsetList.length; i++) {
-        Offset offset = _offsetList[i];
-        _path.lineTo(offset.dx, offset.dy);
-      }
-      _path.close();
-    }
-
-    if (data.areaStyle != null && _offsetList.length >= 3) {
+    if (data.areaStyle != null && _pointList.length >= 3) {
       Path path = Path();
-      path.moveTo(_offsetList[0].dx, _offsetList[0].dy);
-      for (Offset offset in _offsetList) {
+      path.moveTo(_pointList[0].dx, _pointList[0].dy);
+      for (Offset offset in _pointList) {
         path.lineTo(offset.dx, offset.dy);
       }
       path.close();
@@ -239,24 +213,18 @@ class RadarChildView extends ViewGroup {
       addView(areaView);
     }
 
-    if (data.lineStyle != null && _offsetList.length >= 2) {
-      LineView lineView = LineView(_offsetList, data.lineStyle!, paint: paint, close: true);
+    if (data.lineStyle != null) {
+      LineView lineView = LineView(
+        _pointList,
+        data.lineStyle!,
+        paint: paint,
+        close: true,
+        symbolStyle: data.symbolStyle,
+        showSymbol: data.symbolStyle != null,
+      );
       lineView.onMeasure(width, height);
       lineView.onLayout(0, 0, width, height);
       addView(lineView);
-    }
-
-    if (data.showSymbol && data.symbolStyle != null) {
-      for (Offset offset in _offsetList) {
-        ShapeView shapeView = ShapeView(data.symbolStyle!, paint: paint);
-        shapeView.onMeasure(data.symbolStyle!.size.width, data.symbolStyle!.size.height);
-        double left = offset.dx - data.symbolStyle!.size.width / 2;
-        double top = offset.dx - data.symbolStyle!.size.height / 2;
-        double right = offset.dx + data.symbolStyle!.size.width / 2;
-        double bottom = offset.dx + data.symbolStyle!.size.height / 2;
-        shapeView.onLayout(left, top, right, bottom);
-        addView(shapeView);
-      }
     }
   }
 }
