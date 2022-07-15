@@ -23,7 +23,19 @@ enum ChartAlign {
   leftTop,
   leftCenter,
   leftBottom,
-  center
+  center,
+  insideLeftTop,
+  insideLeftCenter,
+  insideLeftBottom,
+  insideTopLeft,
+  insideTopRight,
+  insideTopCenter,
+  insideRightTop,
+  insideRightCenter,
+  insideRightBottom,
+  insideBottomLeft,
+  insideBottomCenter,
+  insideBottomRight,
 }
 
 enum Align2 { auto, start, center, end }
@@ -38,6 +50,11 @@ enum Position {
 
 enum Direction { horizontal, vertical }
 
+enum AnimatorDirection{
+  ste,
+  ets,
+}
+
 /// 线段样式
 class LineStyle {
   final Color color;
@@ -48,7 +65,6 @@ class LineStyle {
   final BoxShadow? shadow;
   final Shader? shader;
   final bool smooth;
-  final bool close;
   final SymbolStyle? symbolStyle;
 
   const LineStyle(
@@ -59,7 +75,6 @@ class LineStyle {
       this.dash = const [],
       this.shadow,
       this.smooth = false,
-      this.close = false,
       this.shader,
       this.symbolStyle});
 
@@ -131,7 +146,6 @@ class AreaStyle {
 class SymbolStyle {
   final ChartSymbol symbol;
   final bool fill;
-
   final Color? color;
   final Shader? shader;
   final double stockWidth;

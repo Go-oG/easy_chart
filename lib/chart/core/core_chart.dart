@@ -25,8 +25,8 @@ class Chart<D extends DataGroup> extends StatefulWidget {
 
 class ChartState<D extends DataGroup> extends State<Chart<D>> with TickerProviderStateMixin {
   late final MultiRender render;
-  late AnimationController? _animationController;
-  late Animation<double>? _animation;
+  AnimationController? _animationController;
+  Animation<double>? _animation;
 
   @override
   void initState() {
@@ -40,6 +40,13 @@ class ChartState<D extends DataGroup> extends State<Chart<D>> with TickerProvide
       );
     }
     render = MultiRender(widget.renderList, animation: _animation);
+    _animationController?.forward();
+  }
+
+  @override
+  void didUpdateWidget(Chart<D> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _animationController?.stop(canceled: true);
     _animationController?.forward();
   }
 
@@ -470,6 +477,8 @@ class MultiRender extends ChangeNotifier with GestureListener implements CustomP
   final List<View> renderList;
   bool _needReLayout = true;
 
+  bool _drawing = false;
+
   MultiRender(this.renderList, {this.animation}) {
     if (animation != null) {
       animation?.addListener(() {
@@ -483,6 +492,7 @@ class MultiRender extends ChangeNotifier with GestureListener implements CustomP
 
   @override
   void paint(Canvas canvas, Size size) {
+    _drawing = true;
     if (_needReLayout) {
       //先测量 获取各个Render的尺寸信息
       for (var element in renderList) {
@@ -509,6 +519,7 @@ class MultiRender extends ChangeNotifier with GestureListener implements CustomP
     for (var element in renderList) {
       element.draw(canvas, animationPercent);
     }
+    _drawing = false;
   }
 
   @override
@@ -520,9 +531,6 @@ class MultiRender extends ChangeNotifier with GestureListener implements CustomP
     }
     return false;
   }
-
-
-
 
   @override
   SemanticsBuilderCallback? get semanticsBuilder => null;
@@ -568,6 +576,8 @@ class MultiRender extends ChangeNotifier with GestureListener implements CustomP
   @override
   void requestLayout() {
     _needReLayout = true;
-    updateUI();
+    if (!_drawing) {
+      updateUI();
+    }
   }
 }

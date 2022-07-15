@@ -1,4 +1,5 @@
 import 'package:easy_chart/chart/core/chart_view.dart';
+import 'package:easy_chart/chart/utils/paint_util.dart';
 import 'package:flutter/material.dart';
 
 class RectView extends View {
@@ -13,6 +14,7 @@ class RectView extends View {
 
   @override
   void onDraw(Canvas canvas, double animatorPercent) {
+    paint.reset();
     paint.style = fill ? PaintingStyle.fill : PaintingStyle.stroke;
     paint.strokeWidth = 2;
     if (animatorPercent >= 1) {

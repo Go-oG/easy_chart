@@ -1,13 +1,22 @@
 import 'package:easy_chart/chart/charts/bar/bar_data.dart';
+import 'package:easy_chart/chart/charts/funnel/funnel_chart.dart';
+import 'package:easy_chart/chart/charts/funnel/funnel_series.dart';
+import 'package:easy_chart/chart/charts/radar/radar_chart.dart';
+import 'package:easy_chart/chart/charts/radar/radar_series.dart';
 import 'package:easy_chart/chart/component/views/line_view.dart';
-import 'package:easy_chart/chart/charts/radar/radar_view.dart';
 import 'package:easy_chart/chart/component/views/rect_view.dart';
 import 'package:easy_chart/chart/core/chart_view.dart';
 import 'package:easy_chart/chart/core/data_group.dart';
 import 'package:easy_chart/chart/options/axis.dart';
+import 'package:easy_chart/chart/options/axis_line.dart';
+import 'package:easy_chart/chart/options/label.dart';
+import 'package:easy_chart/chart/options/radar.dart';
 import 'package:easy_chart/chart/options/string_number.dart';
 import 'package:easy_chart/chart/options/style.dart';
 import 'package:flutter/material.dart';
+
+import 'dart:math' as math;
+
 /// 标准笛卡尔坐标系下的柱状图，适用于bar、line
 class BarLineChartView extends ViewGroup {
   //给定数据使用的坐标轴
@@ -26,10 +35,67 @@ class BarLineChartView extends ViewGroup {
     } else {
       _layoutForValue();
     }
-    RadarView view =
-        RadarView(6, 4, areaColors: [Colors.blueGrey, Colors.teal, Colors.lightGreen, Colors.deepPurple], paint: paint);
-    view.onLayout(0, 0, width, height);
-    addView(view);
+    _testRadar();
+  }
+
+  //TODO 测试
+  void _testFunnelChart() {
+    List<FunnelData> list = [];
+    math.Random random = math.Random();
+    for (int i = 0; i < 5; i++) {
+      AreaStyle areaStyle = AreaStyle(
+          color: Color.fromARGB(
+        255,
+        (random.nextDouble() * 255).toInt(),
+        (random.nextDouble() * 255).toInt(),
+        (random.nextDouble() * 255).toInt(),
+      ));
+      FunnelData data = FunnelData(
+        random.nextDouble() * 80 + 20,
+        areaStyle,
+        label: const ChartLabel(show: true, align: ChartAlign.rightCenter),
+      );
+      list.add(data);
+    }
+
+    FunnelSeries series = FunnelSeries(list,
+        gap: 0,
+        direction: Direction.vertical,
+        funnelAlign: Align2.center,
+        sortAsc: true,
+        animator: true,
+        animatorDirection: AnimatorDirection.ets);
+    FunnelChartView chartView = FunnelChartView(series, paint: paint, zIndex: 20);
+    chartView.onLayout(0, 0, width, height);
+    addView(chartView);
+  }
+
+  void _testRadar() {
+    List<RadarIndicator> indicatorList=[];
+    for (int i = 0; i < 6; i++) {
+      indicatorList.add(RadarIndicator('indicator$i', 100));
+    }
+
+    Radar radar = Radar('123',indicatorList);
+
+    List<RadarData> dl = [];
+    for (int i = 0; i < 1; i++) {
+      List<double> list = [];
+      math.Random random = math.Random();
+      for (int j = 0; j < 6; j++) {
+        list.add(random.nextDouble() * 50);
+      }
+      RadarData radarData = RadarData(
+        list,
+        areaStyle: AreaStyle(color: Colors.deepPurple),
+        lineStyle: LineStyle(color: Colors.deepPurple,width: 2),
+      );
+      dl.add(radarData);
+    }
+    RadarSeries series = RadarSeries(radar, dl);
+    RadarChartView chartView = RadarChartView(series, paint: paint);
+    chartView.onLayout(0, 0, width, height);
+    addView(chartView);
   }
 
   void _layoutForCategory() {
@@ -181,11 +247,10 @@ class BarLineChartView extends ViewGroup {
       }
 
       LineStyle style = element.lineStyle;
-      LineView lineCanvas = LineView(pl, style,paint: paint,showSymbol: style.symbolStyle!=null);
+      LineView lineCanvas = LineView(pl, style, paint: paint, showSymbol: style.symbolStyle != null);
       lineCanvas.onMeasure(areaBounds.width, areaBounds.height);
       lineCanvas.onLayout(0, 0, areaBounds.width, areaBounds.height);
       addView(lineCanvas);
-
     }
   }
 

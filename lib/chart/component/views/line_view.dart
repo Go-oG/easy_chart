@@ -3,16 +3,18 @@ import 'package:easy_chart/chart/component/views/shape_view.dart';
 import 'package:easy_chart/chart/core/chart_view.dart';
 import 'package:easy_chart/chart/options/style.dart';
 import 'package:easy_chart/chart/utils/monotonex.dart';
+import 'package:easy_chart/chart/utils/paint_util.dart';
 import 'package:flutter/material.dart';
 
 class LineView extends ViewGroup {
   final List<Offset> pointList;
   final LineStyle style;
   final bool showSymbol;
+  final bool close;
   final SymbolStyle? symbolStyle;
   late Path _path;
 
-  LineView(this.pointList, this.style, {this.showSymbol = false, this.symbolStyle, super.paint}) {
+  LineView(this.pointList, this.style, {this.showSymbol = false, this.symbolStyle, this.close = false, super.paint}) {
     if (showSymbol && symbolStyle == null) {
       throw FlutterError('当需要显示Symbol时，symbolStyle必须不为空');
     }
@@ -26,6 +28,9 @@ class LineView extends ViewGroup {
           Offset p = pointList[i];
           _path.lineTo(p.dx.toDouble(), p.dy.toDouble());
         }
+      }
+      if (close) {
+        _path.close();
       }
     }
   }
@@ -54,6 +59,7 @@ class LineView extends ViewGroup {
     if (pointList.isEmpty) {
       return;
     }
+    paint.reset();
     style.fillPaint(paint);
     if (pointList.length == 1) {
       canvas.drawPoints(PointMode.points, [Offset(pointList.first.dx.toDouble(), pointList.first.dy.toDouble())], paint);

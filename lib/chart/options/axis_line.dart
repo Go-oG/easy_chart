@@ -11,7 +11,7 @@ class AxisLine {
   final Size symbolSize;
   final LineStyle style;
 
-  AxisLine(
+  const AxisLine(
       {this.show = true,
       this.onZero = true,
       this.onZeroAxisId = '',

@@ -44,7 +44,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
 
     config = ChartConfig();
-    config.animation = ChartAnimation(duration: const Duration(milliseconds: 1200));
+    config.animation = ChartAnimation(duration: const Duration(milliseconds: 1200),enable: true);
     config.yAxis = [
       YAxis('y1', Position.left),
     ];
@@ -102,7 +102,6 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Center(
         child: Container(
-          color: Colors.red.withOpacity(0.5),
           padding: const EdgeInsets.all(8),
           width: 400,
           height: 400,

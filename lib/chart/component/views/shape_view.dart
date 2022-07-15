@@ -1,5 +1,6 @@
 import 'package:easy_chart/chart/core/chart_view.dart';
 import 'package:easy_chart/chart/options/style.dart';
+import 'package:easy_chart/chart/utils/paint_util.dart';
 import 'package:flutter/material.dart';
 
 class ShapeView extends View {
@@ -12,6 +13,7 @@ class ShapeView extends View {
     if (symbolStyle.symbol == ChartSymbol.none) {
       return;
     }
+    paint.reset();
     symbolStyle.fillPaint(paint);
 
     Offset offset = Offset(centerX, centerY);

@@ -18,4 +18,14 @@ class SNumber {
     }
     return number;
   }
+
+  bool isPositiveNumber(){
+    return number>0;
+  }
+
+
+  @override
+  String toString() {
+    return "number:$number isPercent:$percent";
+  }
 }
