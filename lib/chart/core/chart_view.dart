@@ -295,6 +295,10 @@ abstract class ViewGroup extends View implements ViewParent, ViewManager {
     addView2(view, -1);
   }
 
+  View getView(int index){
+    return children[index];
+  }
+
   void addView2(View child, int index) {
     _addViewInner(child, index);
     requestLayout();
@@ -328,4 +332,6 @@ abstract class ViewGroup extends View implements ViewParent, ViewManager {
   void clearChildren() {
     children.clear();
   }
+
+
 }

@@ -235,7 +235,14 @@ class ItemStyle {
   final Color color;
   final BorderSide borderSide;
 
-  const ItemStyle(this.decoration, {this.color = Colors.blue, this.borderSide = const BorderSide(width: 0, color: Colors.transparent)});
+  const ItemStyle(
+    this.decoration, {
+    this.color = Colors.blue,
+    this.borderSide = const BorderSide(
+      width: 0,
+      color: Colors.transparent,
+    ),
+  });
 }
 
 class DashedPathProperties {

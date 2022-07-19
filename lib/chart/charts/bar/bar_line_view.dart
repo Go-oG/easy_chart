@@ -1,6 +1,8 @@
 import 'package:easy_chart/chart/charts/bar/bar_data.dart';
 import 'package:easy_chart/chart/charts/funnel/funnel_chart.dart';
 import 'package:easy_chart/chart/charts/funnel/funnel_series.dart';
+import 'package:easy_chart/chart/charts/pie/pie_chart.dart';
+import 'package:easy_chart/chart/charts/pie/pie_series.dart';
 import 'package:easy_chart/chart/charts/radar/radar_chart.dart';
 import 'package:easy_chart/chart/charts/radar/radar_series.dart';
 import 'package:easy_chart/chart/component/views/line_view.dart';
@@ -34,7 +36,7 @@ class BarLineChartView extends ViewGroup {
     } else {
       _layoutForValue();
     }
-    _testRadar();
+    _testPie();
   }
 
   //TODO 测试
@@ -75,7 +77,8 @@ class BarLineChartView extends ViewGroup {
       indicatorList.add(RadarIndicator('indicator$i', 100));
     }
 
-    RadarAxis radarAxis = RadarAxis('123', indicatorList,splitNumber: 3,
+    RadarAxis radarAxis = RadarAxis('123', indicatorList,
+        splitNumber: 3,
         radius: const SNumber.percent(100),
         axisLine: const AxisLine(
           style: LineStyle(color: Colors.black26, width: 2),
@@ -112,6 +115,25 @@ class BarLineChartView extends ViewGroup {
     RadarChartView chartView = RadarChartView(series, paint: paint);
     chartView.onLayout(0, 0, width, height);
     addView(chartView);
+  }
+
+  void _testPie() {
+    List<PieData> list = [];
+    list.add(PieData(60, const ItemStyle(BoxDecoration(), color: Colors.blueGrey)));
+    list.add(PieData(30, const ItemStyle(BoxDecoration(), color: Colors.green)));
+    list.add(PieData(40, const ItemStyle(BoxDecoration(), color: Colors.lime)));
+    list.add(PieData(50, const ItemStyle(BoxDecoration(), color: Colors.orange)));
+
+    PieSeries series = PieSeries(
+      const [SNumber(30, true), SNumber(20, true)],
+      list,
+      roseType: RoseType.normal,
+      corner: 2,
+      animatorStyle: PieAnimatorStyle.expandScale,
+    );
+    PieChartView pieChartView = PieChartView(series);
+    pieChartView.onLayout(0, 0, width, height);
+    addView(pieChartView);
   }
 
   void _layoutForCategory() {

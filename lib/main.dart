@@ -70,7 +70,7 @@ class _MyHomePageState extends State<MyHomePage> {
           )));
       entityList3.add(DataPoint(i, i + 2,
           itemStyle: const ItemStyle(
-            BoxDecoration(color: Colors.lightBlue),
+            BoxDecoration(color: Colors.black),
           )));
     }
     BarGroup group = BarGroup(ChartType.line, 'x1', 'y1', entityList);
