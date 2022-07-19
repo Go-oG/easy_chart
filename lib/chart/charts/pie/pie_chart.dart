@@ -44,7 +44,7 @@ class PieChartView extends ViewGroup {
     double cy = centerOffset[1].convert(height);
     double maxRadius = 0.5 * min(series.outerRadius.convert(width), series.outerRadius.convert(height));
     for (var element in children) {
-      element.onLayout(cx - maxRadius, cy - maxRadius, cx + maxRadius, cy + maxRadius);
+      element.layout(cx - maxRadius, cy - maxRadius, cx + maxRadius, cy + maxRadius);
     }
   }
 

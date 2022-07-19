@@ -26,6 +26,6 @@ class SNumber {
 
   @override
   String toString() {
-    return "number:$number isPercent:$percent";
+    return "number:${number.toStringAsFixed(2)} isPercent:$percent";
   }
 }

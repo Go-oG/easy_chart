@@ -496,13 +496,10 @@ class MultiRender extends ChangeNotifier with GestureListener implements CustomP
     if (_needReLayout) {
       //先测量 获取各个Render的尺寸信息
       for (var element in renderList) {
-        element.onMeasure(size.width, size.height);
+        element.measure(size.width, size.height);
       }
       for (var element in renderList) {
-        element.onLayout(0, 0, size.width, size.height);
-      }
-      for (var element in renderList) {
-        element.onLayoutEnd();
+        element.layout(0, 0, size.width, size.height);
       }
       _needReLayout = false;
     }

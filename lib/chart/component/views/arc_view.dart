@@ -32,7 +32,11 @@ class ArcView extends View {
     this.border,
     super.paint,
     super.zIndex = 0,
-  });
+  }) {
+    if (color == null && shader == null && fill) {
+      throw FlutterError('当样式为fill时 color 和shader 不能同时为空');
+    }
+  }
 
   @override
   void onDraw(Canvas canvas, double animatorPercent) {
@@ -83,6 +87,11 @@ class ArcView extends View {
       path.close();
     }
     return path;
+  }
+
+  @override
+  String toString() {
+    return 'ArcView IR:${innerRadius.toString()} OR:${outerRadius.toString()} SA:${startAngle.toInt()} WA:${sweepAngle.toInt()} OA:$offsetAngle';
   }
 
   //计算圆弧左上顶角当有圆角时的外部半径坐标

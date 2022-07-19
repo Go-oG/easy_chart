@@ -5,6 +5,8 @@ import 'package:easy_chart/chart/charts/pie/pie_chart.dart';
 import 'package:easy_chart/chart/charts/pie/pie_series.dart';
 import 'package:easy_chart/chart/charts/radar/radar_chart.dart';
 import 'package:easy_chart/chart/charts/radar/radar_series.dart';
+import 'package:easy_chart/chart/charts/sunburst/sunburst_chart.dart';
+import 'package:easy_chart/chart/charts/sunburst/sunburst_series.dart';
 import 'package:easy_chart/chart/component/views/line_view.dart';
 import 'package:easy_chart/chart/component/views/rect_view.dart';
 import 'package:easy_chart/chart/core/chart_view.dart';
@@ -25,18 +27,17 @@ class BarLineChartView extends ViewGroup {
   final YAxis yAxis;
   final List<BarGroup> dataList;
 
-  BarLineChartView(this.xAxis, this.yAxis, this.dataList);
+  BarLineChartView(this.xAxis, this.yAxis, this.dataList, {super.paint, super.zIndex});
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
-    super.onLayout(left, top, right, bottom);
     clearChildren();
     if (xAxis.dataType == AxisDataType.category) {
       _layoutForCategory();
     } else {
       _layoutForValue();
     }
-    _testPie();
+    _testSunburst();
   }
 
   //TODO 测试
@@ -67,7 +68,7 @@ class BarLineChartView extends ViewGroup {
         animator: true,
         animatorDirection: AnimatorDirection.ets);
     FunnelChartView chartView = FunnelChartView(series, paint: paint, zIndex: 20);
-    chartView.onLayout(0, 0, width, height);
+    chartView.layout(0, 0, width, height);
     addView(chartView);
   }
 
@@ -113,7 +114,7 @@ class BarLineChartView extends ViewGroup {
     }
     RadarSeries series = RadarSeries(radarAxis, dl);
     RadarChartView chartView = RadarChartView(series, paint: paint);
-    chartView.onLayout(0, 0, width, height);
+    chartView.layout(0, 0, width, height);
     addView(chartView);
   }
 
@@ -132,8 +133,38 @@ class BarLineChartView extends ViewGroup {
       animatorStyle: PieAnimatorStyle.expandScale,
     );
     PieChartView pieChartView = PieChartView(series);
-    pieChartView.onLayout(0, 0, width, height);
+    pieChartView.layout(0, 0, width, height);
     addView(pieChartView);
+  }
+
+  void _testSunburst() {
+    List<SunburstData> list = [];
+    math.Random random = math.Random();
+    for (int i = 0; i < 4; i++) {
+      Color color = Color.fromARGB(
+        255,
+        (random.nextDouble() * 255).toInt(),
+        (random.nextDouble() * 255).toInt(),
+        (random.nextDouble() * 255).toInt(),
+      );
+      SunburstData data = SunburstData(random.nextDouble() * 50, ItemStyle(const BoxDecoration(), color: color), childrenList: []);
+      for (int j = 0; j < 4; j++) {
+        Color color2 = Color.fromARGB(
+          255,
+          (random.nextDouble() * 255).toInt(),
+          (random.nextDouble() * 255).toInt(),
+          (random.nextDouble() * 255).toInt(),
+        );
+        SunburstData data2 = SunburstData(random.nextDouble() * 50, ItemStyle(const BoxDecoration(), color: color2), childrenList: []);
+        data.childrenList?.add(data2);
+      }
+      list.add(data);
+    }
+
+    SunburstSeries series = SunburstSeries(list);
+    SunburstChartView chartView = SunburstChartView(series);
+    chartView.layout(0, 0, width, height);
+    addView(chartView);
   }
 
   void _layoutForCategory() {
@@ -260,8 +291,8 @@ class BarLineChartView extends ViewGroup {
         if (point != null) {
           double height = boundRect.height * point.y / maxData;
           RectView view = RectView(point.itemStyle.decoration, paint: paint);
-          view.onMeasure(0, 0);
-          view.onLayout(offset, boundRect.height - height, offset + widthList[j], boundRect.height);
+          view.measure(widthList[j], height);
+          view.layout(offset, boundRect.height - height, offset + widthList[j], boundRect.height);
           addView(view);
         }
       }
@@ -286,8 +317,8 @@ class BarLineChartView extends ViewGroup {
 
       LineStyle style = element.lineStyle;
       LineView lineCanvas = LineView(pl, style, paint: paint, showSymbol: style.symbolStyle != null);
-      lineCanvas.onMeasure(areaBounds.width, areaBounds.height);
-      lineCanvas.onLayout(0, 0, areaBounds.width, areaBounds.height);
+      lineCanvas.measure(areaBounds.width, areaBounds.height);
+      lineCanvas.layout(0, 0, areaBounds.width, areaBounds.height);
       addView(lineCanvas);
     }
   }

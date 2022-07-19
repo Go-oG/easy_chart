@@ -17,10 +17,9 @@ class XAxisView<D extends DataGroup> extends BaseAxisView<XAxis, D> {
   AxisType getType() => AxisType.normal;
 
   @override
-  void onMeasure(double parentWidth, double parentHeight) {
+  Size onMeasure(double parentWidth, double parentHeight) {
     if (!axis.show) {
-      super.onMeasure(0, 0);
-      return;
+      return super.onMeasure(0, 0);
     }
 
     D data = dataGroupList.firstWhere((element) => element.xAxisId == axis.id);
@@ -32,7 +31,7 @@ class XAxisView<D extends DataGroup> extends BaseAxisView<XAxis, D> {
       textHeight = painter.height;
     }
     double axisHeight = computeAxisHeight(axis, textHeight);
-    super.onMeasure(parentWidth, axisHeight);
+    return super.onMeasure(parentWidth, axisHeight);
   }
 
   @override
@@ -272,10 +271,9 @@ class YAxisView<D extends DataGroup> extends BaseAxisView<YAxis, D> {
   bool get hasBounds => axis.show;
 
   @override
-  void onMeasure(double parentWidth, double parentHeight) {
+  Size onMeasure(double parentWidth, double parentHeight) {
     if (!axis.show) {
-      super.onMeasure(0, 0);
-      return;
+      return super.onMeasure(0, 0);
     }
     D data = dataGroupList.firstWhere((element) => element.yAxisId == axis.id);
     String s = findMaxLengthLabel(data.dataList, formatter: axis.axisLabel.formatter);
@@ -286,7 +284,7 @@ class YAxisView<D extends DataGroup> extends BaseAxisView<YAxis, D> {
       textWidth = painter.width;
     }
     double axisWidth = computeAxisWidth(axis, textWidth);
-    super.onMeasure(axisWidth, parentHeight);
+    return super.onMeasure(axisWidth, parentHeight);
   }
 
   @override

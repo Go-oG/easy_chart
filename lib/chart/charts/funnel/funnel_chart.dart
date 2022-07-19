@@ -98,13 +98,13 @@ class FunnelChartView extends ViewGroup {
     for (int i = 0; i < children.length; i++) {
       FunnelChildView view = children[i] as FunnelChildView;
       if (series.sortAsc) {
-        view.onMeasure(width, itemHeight);
-        view.onLayout(0, offsetY, width, offsetY + itemHeight);
+        view.measure(width, itemHeight);
+        view.layout(0, offsetY, width, offsetY + itemHeight);
         offsetY += itemHeight;
         offsetY += series.gap;
       } else {
-        view.onMeasure(width, itemHeight);
-        view.onLayout(0, offsetY - itemHeight, width, offsetY);
+        view.measure(width, itemHeight);
+        view.layout(0, offsetY - itemHeight, width, offsetY);
         offsetY -= itemHeight;
         offsetY -= series.gap;
       }
@@ -118,13 +118,13 @@ class FunnelChartView extends ViewGroup {
     for (int i = 0; i < children.length; i++) {
       FunnelChildView view = children[i] as FunnelChildView;
       if (series.sortAsc) {
-        view.onMeasure(itemWidth, height);
-        view.onLayout(offsetX, 0, offsetX + itemWidth, height);
+        view.measure(itemWidth, height);
+        view.layout(offsetX, 0, offsetX + itemWidth, height);
         offsetX += itemWidth;
         offsetX += series.gap;
       } else {
-        view.onMeasure(itemWidth, height);
-        view.onLayout(offsetX - itemWidth, 0, offsetX, height);
+        view.measure(itemWidth, height);
+        view.layout(offsetX - itemWidth, 0, offsetX, height);
         offsetX -= itemWidth;
         offsetX -= series.gap;
       }

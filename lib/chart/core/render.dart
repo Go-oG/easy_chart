@@ -45,13 +45,12 @@ abstract class DescartesViewGroup<D extends DataGroup> extends ViewGroup {
   }
 
   @override
-  void onMeasure(double parentWidth, double parentHeight) {
-    super.onMeasure(parentWidth, parentHeight);
+  Size onMeasure(double parentWidth, double parentHeight) {
     xAxisMap.forEach((key, value) {
-      value.onMeasure(parentWidth, parentHeight);
+      value.measure(parentWidth, parentHeight);
     });
     yAxisMap.forEach((key, value) {
-      value.onMeasure(parentWidth, parentHeight);
+      value.measure(parentWidth, parentHeight);
     });
     double leftOffset = 0;
     double topOffset = 0;
@@ -76,11 +75,11 @@ abstract class DescartesViewGroup<D extends DataGroup> extends ViewGroup {
       }
     }
 
-    windowRect = Rect.fromLTRB(leftOffset , topOffset , parentWidth - rightOffset , parentHeight - bottomOffset);
-
+    windowRect = Rect.fromLTRB(leftOffset, topOffset, parentWidth - rightOffset, parentHeight - bottomOffset);
     for (var element in children) {
-      element.onMeasure(windowRect.width, windowRect.height);
+      element.measure(windowRect.width, windowRect.height);
     }
+    return super.onMeasure(parentWidth, parentHeight);
   }
 
   @override
@@ -106,7 +105,7 @@ abstract class DescartesViewGroup<D extends DataGroup> extends ViewGroup {
         bottom = top + view.height;
         bottomOffset += view.height;
       }
-      view.onLayout(left, top, right, bottom);
+      view.layout(left, top, right, bottom);
     }
     //对Y轴进行布局
     double leftOffset = 0;
@@ -126,14 +125,14 @@ abstract class DescartesViewGroup<D extends DataGroup> extends ViewGroup {
         right = left + view.width;
         rightOffset += view.width;
       }
-      view.onLayout(left, windowRect.top, right, windowRect.bottom);
+      view.layout(left, windowRect.top, right, windowRect.bottom);
     }
 
     for (var element in children) {
       if (element is XAxisView || element is YAxisView) {
         continue;
       }
-      element.onLayout(windowRect.left, windowRect.top, windowRect.right, windowRect.bottom);
+      element.layout(windowRect.left, windowRect.top, windowRect.right, windowRect.bottom);
     }
   }
 }

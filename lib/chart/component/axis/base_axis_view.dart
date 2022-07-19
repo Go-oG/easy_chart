@@ -6,7 +6,7 @@ import 'package:easy_chart/chart/options/axis.dart';
 import 'package:flutter/material.dart';
 
 /// 笛卡尔坐标轴视图的基类
-/// 使用时 必须先 call[onMeasure] -> call[onLayout]->call[draw]
+/// 使用时 必须先 call[Measure] -> call[Layout]->call[draw]
 abstract class BaseAxisView<T extends BaseAxis, D extends DataGroup> extends View {
   final T axis;
   final List<D> dataGroupList;

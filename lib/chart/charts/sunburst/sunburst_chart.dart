@@ -13,7 +13,6 @@ class SunburstChartView extends ViewGroup {
   double minData = 0;
   double allData = 0;
   double radiusDiff = 0; //半径差值
-
   int level = 0; //记录层级
 
   SunburstChartView(this.series) {
@@ -31,8 +30,6 @@ class SunburstChartView extends ViewGroup {
       }
     }
     this.level = level;
-
-
     for (var element in series.dataList) {
       if (element.data > maxData) {
         maxData = element.data;
@@ -53,29 +50,15 @@ class SunburstChartView extends ViewGroup {
     if (children.length != series.dataList.length) {
       throw FlutterError('状态异常');
     }
-
     List<SNumber> centerOffset = series.center;
     double cx = centerOffset[0].convert(width);
     double cy = centerOffset[1].convert(height);
     double maxRadius = 0.5 * min(series.outerRadius.convert(width), series.outerRadius.convert(height));
 
-    double radiusDiff=maxRadius/level;
+    radiusDiff = maxRadius / level;
 
-    for (var element in children) {
-      element.onLayout(cx - maxRadius, cy - maxRadius, cx + maxRadius, cy + maxRadius);
-      SunburstParentView view=element as SunburstParentView;
-      view.radiusDiff=radiusDiff;
-
-    }
-  }
-
-  @override
-  void draw(Canvas canvas, double animatorPercent) {
-    _drawForNormal(animatorPercent);
-    super.draw(canvas, animatorPercent);
-  }
-
-  void _drawForNormal(double animatorPercent) {
+    double size = series.innerRadius.convert(maxRadius);
+    SNumber rootRadius = SNumber(size, false);
     int count = series.dataList.length;
     double gapAllAngle = count * series.gapAngle;
     double remainAngle = 360 - gapAllAngle;
@@ -85,27 +68,28 @@ class SunburstChartView extends ViewGroup {
     }
 
     double startAngle = series.gapAngle;
-    for (int i = 0; i < series.dataList.length; i++) {
-      SunburstData pieData = series.dataList[i];
-      double sweepAngle = remainAngle * pieData.data / all;
+    int i = 0;
+    for (var element in children) {
+      element.layout(cx - maxRadius, cy - maxRadius, cx + maxRadius, cy + maxRadius);
+      SunburstParentView view = element as SunburstParentView;
+      view.radiusDiff = radiusDiff;
+      view.innerRadius = rootRadius;
+
+      SunburstData data = series.dataList[i];
+      double sweepAngle = remainAngle * data.data / all;
       SunburstParentView arcView = getView(i) as SunburstParentView;
-      arcView.innerRadius = series.innerRadius;
       arcView.startAngle = startAngle;
-      arcView.sweepAngle = sweepAngle * animatorPercent;
-      if (series.animatorStyle == PieAnimatorStyle.expand || series.animatorStyle == PieAnimatorStyle.expandScale) {
-        startAngle += arcView.sweepAngle + series.gapAngle;
-      } else {
-        startAngle += sweepAngle + series.gapAngle;
-      }
+      arcView.sweepAngle = sweepAngle;
+      startAngle += sweepAngle + series.gapAngle;
+      i++;
     }
   }
-
 }
 
 class SunburstParentView extends ViewGroup {
   final SunburstData data;
   final double gapAngle;
-  SNumber innerRadius;
+  SNumber innerRadius; //是一个确定的数值
   double startAngle;
   double sweepAngle;
   double radiusDiff;
@@ -113,49 +97,66 @@ class SunburstParentView extends ViewGroup {
   final List<SunburstParentView> _viewList = [];
   late ArcView arcView;
 
-  SunburstParentView(this.data, {
+  SunburstParentView(
+    this.data, {
     this.innerRadius = const SNumber.percent(0),
     this.gapAngle = 0,
     this.startAngle = 0,
     this.sweepAngle = 0,
-    this.radiusDiff = 0;
+    this.radiusDiff = 0,
+    super.paint,
+    super.zIndex,
   }) {
-    arcView = ArcView();
-    addView(arcView);
     data.childrenList?.forEach((element) {
-      SunburstParentView view = SunburstParentView(element);
+      SunburstParentView view = SunburstParentView(
+        element,
+        paint: paint,
+        zIndex: zIndex,
+        gapAngle: gapAngle,
+        radiusDiff: radiusDiff,
+      );
       addView(view);
       _viewList.add(view);
     });
+
+    arcView = ArcView();
+    addView(arcView);
   }
 
   @override
   @mustCallSuper
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
-
     //设置自身圆弧的位置
     arcView.innerRadius = innerRadius;
-    arcView.outerRadius = outerRadius;
+    arcView.outerRadius = SNumber(innerRadius.number + radiusDiff, false);
     arcView.startAngle = startAngle;
     arcView.sweepAngle = sweepAngle;
 
-    //计算底层圆弧的位置
-    double all = 0;
-    for (var element in _viewList) {
-      all += element.data.data;
-    }
-    double angleOffset = startAngle;
-    for (var element in _viewList) {
-      double percent = element.data.data / all;
-      double childSweepAngle = sweepAngle * percent;
-      element.startAngle = angleOffset;
-      element.sweepAngle = childSweepAngle;
-      element.innerRadius = outerRadius;
-      //这里要优化一下
-      element.outerRadius = SNumber(2 * outerRadius.number - innerRadius.number, outerRadius.percent);
-      angleOffset += childSweepAngle;
-      angleOffset += gapAngle;
-    }
+    print(arcView.toString());
+
+    // //计算底层圆弧的位置
+    // double all = 0;
+    // for (var element in _viewList) {
+    //   all += element.data.data;
+    // }
+    //
+    // double angleOffset = startAngle;
+    // SNumber outerRadius = SNumber(innerRadius.number + radiusDiff, false);
+    // for (var element in _viewList) {
+    //   element.onLayout(0, 0, width, height);
+    //   double percent = element.data.data / all;
+    //   double childSweepAngle = sweepAngle * percent;
+    //   element.startAngle = angleOffset;
+    //   element.sweepAngle = childSweepAngle;
+    //   element.innerRadius = outerRadius;
+    //   angleOffset += childSweepAngle;
+    //   angleOffset += gapAngle;
+    // }
+  }
+
+  @override
+  String toString() {
+    return "Bound$boundRect IR:$innerRadius RD:$radiusDiff SA:${startAngle.toInt()} SA2:${sweepAngle.toInt()}";
   }
 }

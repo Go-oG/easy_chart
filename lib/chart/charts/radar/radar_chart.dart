@@ -45,7 +45,7 @@ class RadarChartView extends ViewGroup {
     double cy = axis.center[1].convert(height);
     double radius = 0.5*axis.radius.convert(math.min(width, height));
     for (var element in children) {
-      element.onLayout(cx - radius, cy - radius, cx + radius, cy + radius);
+      element.layout(cx - radius, cy - radius, cx + radius, cy + radius);
     }
   }
 }
@@ -208,8 +208,8 @@ class RadarChildView extends ViewGroup {
       }
       path.close();
       AreaView areaView = AreaView(path, data.areaStyle!);
-      areaView.onMeasure(width, height);
-      areaView.onLayout(0, 0, width, height);
+      areaView.measure(width, height);
+      areaView.layout(0, 0, width, height);
       addView(areaView);
     }
 
@@ -222,8 +222,8 @@ class RadarChildView extends ViewGroup {
         symbolStyle: data.symbolStyle,
         showSymbol: data.symbolStyle != null,
       );
-      lineView.onMeasure(width, height);
-      lineView.onLayout(0, 0, width, height);
+      lineView.measure(width, height);
+      lineView.layout(0, 0, width, height);
       addView(lineView);
     }
   }

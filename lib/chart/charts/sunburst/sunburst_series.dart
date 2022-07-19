@@ -13,18 +13,16 @@ class SunburstSeries {
   final double corner;
   final double gapAngle;
   final ChartLabel label;
-  final PieAnimatorStyle animatorStyle;
 
   SunburstSeries(
-    this.center,
     this.dataList, {
+    this.center = const [SNumber.percent(50), SNumber.percent(50)],
     this.innerRadius = const SNumber.percent(10),
     this.outerRadius = const SNumber.percent(80),
     this.offsetAngle = 0,
     this.corner = 0,
     this.gapAngle = 0,
     this.label = const ChartLabel(),
-    this.animatorStyle = PieAnimatorStyle.expandScale,
   });
 }
 
@@ -46,9 +44,3 @@ class SunburstData {
   });
 }
 
-enum PieAnimatorStyle {
-  expand,
-  expandScale,
-  originExpand,
-  originExpandScale,
-}

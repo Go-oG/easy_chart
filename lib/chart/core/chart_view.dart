@@ -97,23 +97,53 @@ abstract class View with GestureListener {
     }
   }
 
-  @mustCallSuper
-  void onMeasure(double parentWidth, double parentHeight) {
+  void measure(double parentWidth, double parentHeight) {
     oldBoundRect = boundRect;
-    boundRect = Rect.fromLTWH(0, 0, parentWidth, parentHeight);
+    Size size = onMeasure(parentWidth, parentHeight);
+    boundRect = Rect.fromLTWH(0, 0, size.width, size.height);
   }
 
-  @mustCallSuper
-  void onLayout(double left, double top, double right, double bottom) {
+  Size onMeasure(double parentWidth, double parentHeight) {
+    return Size(parentWidth, parentHeight);
+  }
+
+  void layout(double left, double top, double right, double bottom) {
     inLayout = true;
     oldBoundRect = boundRect;
     boundRect = Rect.fromLTRB(left, top, right, bottom);
-  }
-
-  @mustCallSuper
-  void onLayoutEnd() {
+    onLayout(left, top, right, bottom);
     inLayout = false;
   }
+
+  void onLayout(double left, double top, double right, double bottom) {}
+
+
+  @mustCallSuper
+  void draw(Canvas canvas, double animatorPercent) {
+    _drawBackground(canvas, animatorPercent);
+    onDraw(canvas, animatorPercent);
+    dispatchDraw(canvas, animatorPercent);
+    onDrawHighlight(canvas, animatorPercent);
+    onDrawForeground(canvas, animatorPercent);
+  }
+
+  void _drawBackground(Canvas canvas, double animatorPercent) {
+    ImageConfiguration configuration = ImageConfiguration(size: Size(width, height));
+    _boxPainter?.paint(canvas, Offset.zero, configuration);
+  }
+
+  void onDraw(Canvas canvas, double animatorPercent) {}
+
+  void onDrawForeground(Canvas canvas, double animatorPercent) {
+    ImageConfiguration configuration = ImageConfiguration(size: Size(width, height));
+    _foregroundPainter?.paint(canvas, Offset.zero, configuration);
+  }
+
+  ///用于ViewGroup覆写
+  void dispatchDraw(Canvas canvas, double animatorPercent) {}
+
+  /// 覆写实现重绘高亮相关的
+  void onDrawHighlight(Canvas canvas, double animatorPercent) {}
 
   double get width => boundRect.width;
 
@@ -132,15 +162,6 @@ abstract class View with GestureListener {
   double get centerX => width / 2.0;
 
   double get centerY => height / 2.0;
-
-  void draw(Canvas canvas, double animatorPercent) {
-    ImageConfiguration configuration = ImageConfiguration(size: Size(width, height));
-    _boxPainter?.paint(canvas, Offset.zero, configuration);
-    onDraw(canvas, animatorPercent);
-    _foregroundPainter?.paint(canvas, Offset.zero, configuration);
-  }
-
-  void onDraw(Canvas canvas, double animatorPercent) {}
 
   //返回其矩形边界
   Rect get areaBounds => boundRect;
@@ -238,51 +259,39 @@ abstract class ViewGroup extends View implements ViewParent, ViewManager {
   }
 
   @override
-  @mustCallSuper
-  void onMeasure(double parentWidth, double parentHeight) {
-    super.onMeasure(parentWidth, parentHeight);
+  void measure(double parentWidth, double parentHeight) {
+    Size size = onMeasure(parentWidth, parentHeight);
+    oldBoundRect = boundRect;
+    boundRect = Rect.fromLTWH(0, 0, size.width, size.height);
     for (var element in children) {
-      element.onMeasure(parentWidth, parentHeight);
+      element.measure(size.width, size.height);
     }
   }
 
   @override
-  @mustCallSuper
   void onLayout(double left, double top, double right, double bottom) {
-    super.onLayout(left, top, right, bottom);
     for (var element in children) {
-      element.onLayout(left, top, right, bottom);
+      element.layout(0, 0, element.width, element.height);
     }
   }
 
   @override
-  @mustCallSuper
-  void onLayoutEnd() {
-    super.onLayoutEnd();
-    for (var element in children) {
-      element.onLayoutEnd();
-    }
-  }
-
-  @override
-  void draw(Canvas canvas, double animatorPercent) {
-    ImageConfiguration configuration = ImageConfiguration(size: Size(width, height));
-    _boxPainter?.paint(canvas, Offset.zero, configuration);
-    onDraw(canvas, animatorPercent);
-
+  void dispatchDraw(Canvas canvas, double animatorPercent) {
     for (var element in children) {
       int count = canvas.getSaveCount();
       canvas.save();
-      canvas.translate(element.left, element.top);
-      element.draw(canvas, animatorPercent);
-      canvas.clipRect(Rect.fromLTWH(0, 0, width, height));
+      drawChild(element, canvas, animatorPercent);
       canvas.restore();
       if (canvas.getSaveCount() != count) {
         throw FlutterError('you should call canvas.restore when after call canvas.save');
       }
     }
+  }
 
-    _foregroundPainter?.paint(canvas, Offset.zero, configuration);
+  void drawChild(View child, Canvas canvas, double animatorPercent) {
+    canvas.translate(child.left, child.top);
+    child.draw(canvas, animatorPercent);
+    canvas.clipRect(Rect.fromLTWH(0, 0, width, height));
   }
 
   @override
@@ -295,7 +304,7 @@ abstract class ViewGroup extends View implements ViewParent, ViewManager {
     addView2(view, -1);
   }
 
-  View getView(int index){
+  View getView(int index) {
     return children[index];
   }
 
@@ -332,6 +341,4 @@ abstract class ViewGroup extends View implements ViewParent, ViewManager {
   void clearChildren() {
     children.clear();
   }
-
-
 }

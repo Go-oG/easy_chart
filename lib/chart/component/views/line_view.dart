@@ -46,8 +46,8 @@ class LineView extends ViewGroup {
     Size size = tmpStyle.size;
     for (var element in pointList) {
       ShapeView shapeView = ShapeView(tmpStyle, paint: paint);
-      shapeView.onMeasure(size.width, size.height);
-      shapeView.onLayout(
+      shapeView.measure(size.width, size.height);
+      shapeView.layout(
           element.dx - size.width / 2, element.dy - size.height / 2, element.dx + size.width / 2, element.dy + size.height / 2);
       addView(shapeView);
     }
