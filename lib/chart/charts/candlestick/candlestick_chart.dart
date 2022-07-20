@@ -3,6 +3,7 @@ import 'package:easy_chart/chart/options/style.dart';
 import 'package:easy_chart/chart/utils/paint_util.dart';
 import 'package:flutter/material.dart';
 
+/// 单个K线图
 class CandleStickView extends View {
   final double maxPrice;
   final double minPrice;
