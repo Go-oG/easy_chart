@@ -44,7 +44,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
 
     config = ChartConfig();
-    config.animation = ChartAnimation(duration: const Duration(milliseconds: 1200),enable: true);
+    config.animation = ChartAnimation(duration: const Duration(milliseconds: 1200),enable: false);
     config.yAxis = [
       YAxis('y1', Position.left),
     ];

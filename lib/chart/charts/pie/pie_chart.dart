@@ -73,7 +73,7 @@ class PieChartView extends ViewGroup {
     for (int i = 0; i < series.dataList.length; i++) {
       PieData pieData = series.dataList[i];
       double sweepAngle = remainAngle * pieData.data / allData;
-      ArcView arcView = getView(i) as ArcView;
+      ArcView arcView = getChildAt(i) as ArcView;
       arcView.innerRadius = innerRadius;
       arcView.outerRadius = outerRadius;
       arcView.offsetAngle = series.offsetAngle;
@@ -98,7 +98,7 @@ class PieChartView extends ViewGroup {
       for (int i = 0; i < series.dataList.length; i++) {
         PieData pieData = series.dataList[i];
         double percent = pieData.data / maxData;
-        ArcView arcView = getView(i) as ArcView;
+        ArcView arcView = getChildAt(i) as ArcView;
         arcView.innerRadius = series.innerRadius;
         if (series.animatorStyle == PieAnimatorStyle.expandScale || series.animatorStyle == PieAnimatorStyle.originExpandScale) {
           arcView.outerRadius = SNumber(series.outerRadius.number * percent * animatorPercent, series.outerRadius.percent);
@@ -124,7 +124,7 @@ class PieChartView extends ViewGroup {
         PieData pieData = series.dataList[i];
         double sweepAngle = remainAngle * pieData.data / all;
         double percent = pieData.data / maxData;
-        ArcView arcView = getView(i) as ArcView;
+        ArcView arcView = getChildAt(i) as ArcView;
         arcView.innerRadius = series.innerRadius;
         if (series.animatorStyle == PieAnimatorStyle.expandScale || series.animatorStyle == PieAnimatorStyle.originExpandScale) {
           arcView.outerRadius = SNumber(series.outerRadius.number * percent * animatorPercent, series.outerRadius.percent);

@@ -50,6 +50,7 @@ class ArcView extends View {
     paint.style = fill ? PaintingStyle.fill : PaintingStyle.stroke;
     canvas.translate(centerX, centerY);
     canvas.drawPath(_computeArcPath(), paint);
+    print('绘制：${toString()}');
   }
 
   // 计算路径

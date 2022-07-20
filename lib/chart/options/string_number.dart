@@ -12,17 +12,18 @@ class SNumber {
     return number / 100.0;
   }
 
+  /// 给定一个数，如果当前对象是百分比则返回给定数的百分比
+  /// 否则返回当前的值
   double convert(double number) {
     if (percent) {
       return number * percentRatio();
     }
-    return number;
+    return this.number;
   }
 
-  bool isPositiveNumber(){
-    return number>0;
+  bool isPositiveNumber() {
+    return number > 0;
   }
-
 
   @override
   String toString() {

@@ -304,7 +304,7 @@ abstract class ViewGroup extends View implements ViewParent, ViewManager {
     addView2(view, -1);
   }
 
-  View getView(int index) {
+  View getChildAt(int index) {
     return children[index];
   }
 

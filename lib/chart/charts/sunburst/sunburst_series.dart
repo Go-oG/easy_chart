@@ -10,37 +10,65 @@ class SunburstSeries {
   final SNumber innerRadius; //内圆半径(<=0时为圆)
   final SNumber outerRadius; //外圆最大半径(<=0时为圆)
   final double offsetAngle; // 偏移角度
+  final double radiusGap;
+  final double angleGap;
+  final bool adjustData;
   final double corner;
-  final double gapAngle;
   final ChartLabel label;
 
   SunburstSeries(
     this.dataList, {
     this.center = const [SNumber.percent(50), SNumber.percent(50)],
-    this.innerRadius = const SNumber.percent(10),
+    this.innerRadius = const SNumber.number(0),
     this.outerRadius = const SNumber.percent(80),
     this.offsetAngle = 0,
     this.corner = 0,
-    this.gapAngle = 0,
+    this.radiusGap = 0,
+    this.angleGap = 0,
+    this.adjustData = true,
     this.label = const ChartLabel(),
   });
 }
 
+/// 旭日图数据
 class SunburstData {
   final double data;
-  final String? label;
+  final SunburstData? parent;
   final ItemStyle style;
-  final bool fill;
+  final double? radiusDiff; //指定当前层圆环半径的差值 如果有些有，有些没有则全层都取相同的（>0时有效）
+  final String? label;
   final Shader? shader;
   final List<SunburstData>? childrenList;
 
+  double? _allData;
+
   SunburstData(
     this.data,
+    this.parent,
     this.style, {
     this.shader,
     this.label,
-    this.fill = true,
+    this.radiusDiff,
     this.childrenList,
   });
-}
 
+  /// 这里计算出所有的子类数据量
+  /// 当总数据比当前数据小时应返回当前的数据
+  double computeAllData({bool adjustData = true}) {
+    if (childrenList == null || childrenList!.isEmpty) {
+      return data;
+    }
+
+    if (_allData == null) {
+      double tmp = 0;
+      childrenList?.forEach((element) {
+        tmp += element.computeAllData();
+      });
+      _allData = tmp;
+    }
+    if (adjustData && _allData! < data) {
+      return data;
+    }
+    return _allData!;
+  }
+}

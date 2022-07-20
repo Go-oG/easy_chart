@@ -147,22 +147,34 @@ class BarLineChartView extends ViewGroup {
         (random.nextDouble() * 255).toInt(),
         (random.nextDouble() * 255).toInt(),
       );
-      SunburstData data = SunburstData(random.nextDouble() * 50, ItemStyle(const BoxDecoration(), color: color), childrenList: []);
-      for (int j = 0; j < 4; j++) {
+      SunburstData data = SunburstData(90, null, ItemStyle(const BoxDecoration(), color: color), childrenList: []);
+
+      for (int j = 0; j < 3; j++) {
         Color color2 = Color.fromARGB(
           255,
           (random.nextDouble() * 255).toInt(),
           (random.nextDouble() * 255).toInt(),
           (random.nextDouble() * 255).toInt(),
         );
-        SunburstData data2 = SunburstData(random.nextDouble() * 50, ItemStyle(const BoxDecoration(), color: color2), childrenList: []);
+        SunburstData data2 = SunburstData(20, data, ItemStyle(const BoxDecoration(), color: color2), radiusDiff: 20, childrenList: []);
         data.childrenList?.add(data2);
+        for (int k = 0; k < 2; k++) {
+          Color color3 = Color.fromARGB(
+            255,
+            (random.nextDouble() * 255).toInt(),
+            (random.nextDouble() * 255).toInt(),
+            (random.nextDouble() * 255).toInt(),
+          );
+          SunburstData data3 = SunburstData(10, data2, ItemStyle(const BoxDecoration(), color: color3), radiusDiff: 40, childrenList: []);
+          data2.childrenList?.add(data3);
+        }
       }
       list.add(data);
     }
 
-    SunburstSeries series = SunburstSeries(list);
+    SunburstSeries series = SunburstSeries(list, innerRadius: const SNumber.percent(30), adjustData: true);
     SunburstChartView chartView = SunburstChartView(series);
+    chartView.measure(width, height);
     chartView.layout(0, 0, width, height);
     addView(chartView);
   }
