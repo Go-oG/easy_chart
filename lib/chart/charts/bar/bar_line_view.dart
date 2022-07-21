@@ -7,6 +7,8 @@ import 'package:easy_chart/chart/charts/radar/radar_chart.dart';
 import 'package:easy_chart/chart/charts/radar/radar_series.dart';
 import 'package:easy_chart/chart/charts/sunburst/sunburst_chart.dart';
 import 'package:easy_chart/chart/charts/sunburst/sunburst_series.dart';
+import 'package:easy_chart/chart/charts/treemap/treemap_chart.dart';
+import 'package:easy_chart/chart/charts/treemap/treemap_series.dart';
 import 'package:easy_chart/chart/component/views/line_view.dart';
 import 'package:easy_chart/chart/component/views/rect_view.dart';
 import 'package:easy_chart/chart/core/chart_view.dart';
@@ -37,7 +39,7 @@ class BarLineChartView extends ViewGroup {
     } else {
       _layoutForValue();
     }
-    _testSunburst();
+    _testTreeMap();
   }
 
   //TODO 测试
@@ -176,6 +178,38 @@ class BarLineChartView extends ViewGroup {
     SunburstChartView chartView = SunburstChartView(series);
     chartView.measure(width, height);
     chartView.layout(0, 0, width, height);
+    addView(chartView);
+  }
+
+  void _testTreeMap() {
+    List<TreeMapData> list = [];
+    math.Random random = math.Random();
+    List<double> datas = [3, 2, 6, 4, 1, 2, 6];
+    for (int i = 0; i < 7; i++) {
+      Color color = Color.fromARGB(
+          255, (random.nextDouble() * 255).toInt(), (random.nextDouble() * 255).toInt(), (random.nextDouble() * 255).toInt());
+      TreeMapData data = TreeMapData(datas[i], [], style: ItemStyle(const BoxDecoration(), color: color));
+
+      // for (int j = 0; j < 3; j++) {
+      //   Color color2 = Color.fromARGB(
+      //       255, (random.nextDouble() * 255).toInt(), (random.nextDouble() * 255).toInt(), (random.nextDouble() * 255).toInt());
+      //   TreeMapData data2 = TreeMapData(random.nextInt(50).toDouble(), [], style: ItemStyle(const BoxDecoration(), color: color2));
+      //   data.childrenList.add(data2);
+      //
+      //   // for (int k = 0; k < 2; k++) {
+      //   //   Color color3 = Color.fromARGB(
+      //   //       255, (random.nextDouble() * 255).toInt(), (random.nextDouble() * 255).toInt(), (random.nextDouble() * 255).toInt());
+      //   //   TreeMapData data3 = TreeMapData(random.nextInt(20).toDouble(), [], style: ItemStyle(const BoxDecoration(), color: color3));
+      //   //   data2.childrenList.add(data3);
+      //   // }
+      // }
+      list.add(data);
+    }
+
+    TreeMapSeries series = TreeMapSeries(list);
+    TreeMapChartView chartView = TreeMapChartView(series);
+    chartView.measure(160*1.5,160);
+    chartView.layout(0, 0,160*1.5, 160);
     addView(chartView);
   }
 
