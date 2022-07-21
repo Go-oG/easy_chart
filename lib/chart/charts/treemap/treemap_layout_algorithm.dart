@@ -60,10 +60,7 @@ class DiceLayout extends LayoutAlgorithm {
   DiceLayout(super.data, super.width, super.height);
 
   @override
-  List<TreeNode> layout(double left, double top, double right, double bottom) {
-    // TODO: implement layout
-    throw UnimplementedError();
-  }
+  List<TreeNode> layout(double left, double top, double right, double bottom) {}
 }
 
 class SliceLayout extends LayoutAlgorithm {
@@ -112,21 +109,9 @@ class SquarifiedLayout extends LayoutAlgorithm {
       return b.computeChildrenData().compareTo(a.computeChildrenData());
     });
     // 计算每个矩形需要占据的面积及其百分比
-    double all = 0;
-    for (var element in dataList) {
-      all += element.computeChildrenData();
-    }
-    List<TreeNode> nodeList = [];
-    double area = width * height;
-    for (var element in dataList) {
-      TreeNode node = TreeNode(element, element.computeChildrenData() / all);
-      node.area = area * node.areaPercent;
-      nodeList.add(node);
-    }
-
-    // 开始布局
+    List<TreeNode> nodeList = _convertDataToNode(width, height, dataList);
     List<TreeNode> resultList = []; //存储结果
-
+    // 开始布局
     //记录剩余可用范围边界
     Rect remainRect = Rect.fromLTWH(0, 0, width, height);
     List<TreeNode> nodeStack = [];
@@ -228,15 +213,6 @@ class SquarifiedLayout extends LayoutAlgorithm {
     return resultList;
   }
 
-  /// 计算给定数据占用的总面积
-  double _computeChildrenFillArea(List<TreeNode> list) {
-    double area = 0;
-    for (var element in list) {
-      area += element.area;
-    }
-    return area;
-  }
-
   //针对按照高度方向布局，进行重新调整所有给定数据的矩形范围
   void _readjustChildForAlightHeight(List<TreeNode> list, double left, double top, double remainHeight) {
     double allArea = _computeChildrenFillArea(list);
@@ -295,4 +271,33 @@ class ResquarifyLayout extends LayoutAlgorithm {
     // TODO: implement layout
     throw UnimplementedError();
   }
+}
+
+/// 计算给定数据占用的总面积
+double _computeChildrenFillArea(List<TreeNode> list) {
+  double area = 0;
+  for (var element in list) {
+    area += element.area;
+  }
+  return area;
+}
+
+double _computeDataSum(List<TreeMapData> dataList, {bool adjustData = true}) {
+  double all = 0;
+  for (var element in dataList) {
+    all += element.computeChildrenData(adjustData: adjustData);
+  }
+  return all;
+}
+
+List<TreeNode> _convertDataToNode(double width, double height, List<TreeMapData> dataList) {
+  double dataSum = _computeDataSum(dataList);
+  List<TreeNode> nodeList = [];
+  double area = width * height;
+  for (var element in dataList) {
+    TreeNode node = TreeNode(element, element.computeChildrenData() / dataSum);
+    node.area = area * node.areaPercent;
+    nodeList.add(node);
+  }
+  return nodeList;
 }
