@@ -36,78 +36,199 @@ class Optimal {
   Optimal(this.direction, this.ratio);
 }
 
-abstract class LayoutAlgorithm {
+abstract class TreemapLayout {
   final TreeMapData data;
   final double width;
   final double height;
 
-  LayoutAlgorithm(this.data, this.width, this.height);
+  TreemapLayout(this.data, this.width, this.height);
 
-  List<TreeNode> layout(double left, double top, double right, double bottom);
-}
-
-class BinaryLayout extends LayoutAlgorithm {
-  BinaryLayout(super.data, super.width, super.height);
-
-  @override
-  List<TreeNode> layout(double left, double top, double right, double bottom) {
-    // TODO: implement layout
-    throw UnimplementedError();
-  }
-}
-
-class DiceLayout extends LayoutAlgorithm {
-  DiceLayout(super.data, super.width, super.height);
-
-  @override
-  List<TreeNode> layout(double left, double top, double right, double bottom) {}
-}
-
-class SliceLayout extends LayoutAlgorithm {
-  SliceLayout(super.data, super.width, super.height);
-
-  @override
-  List<TreeNode> layout(double left, double top, double right, double bottom) {
-    // TODO: implement layout
-    throw UnimplementedError();
-  }
-}
-
-class SliceDiceLayout extends LayoutAlgorithm {
-  SliceDiceLayout(
-    super.data,
-    super.width,
-    super.height,
-  );
-
-  @override
-  List<TreeNode> layout(double left, double top, double right, double bottom) {
-    // TODO: implement layout
-    throw UnimplementedError();
-  }
-}
-
-class SquarifiedLayout extends LayoutAlgorithm {
-  final bool upToDown; //是否从上往下
-
-  SquarifiedLayout(super.data, super.width, super.height, {this.upToDown = false});
-
-  @override
   List<TreeNode> layout(double left, double top, double right, double bottom) {
     if (data.childrenList.isEmpty) {
       return [];
     }
-
     if (data.childrenList.length == 1) {
       TreeNode treeNode = TreeNode(data.childrenList.first, 1);
       treeNode.rect = Rect.fromLTWH(0, 0, width, height);
       return [treeNode];
     }
+    return [];
+  }
+}
 
-    List<TreeMapData> dataList = List.from(data.childrenList);
+class BinaryNode {
+  final TreeMapData data;
+  Rect rect = Rect.zero;
+  BinaryNode? left;
+  BinaryNode? right;
+
+  BinaryNode(
+    this.data,
+  );
+}
+
+/// 近似平衡二叉树排列
+/// 为宽矩形选择水平分区，为高矩形选择垂直分区的布局方式。
+/// 由于权重只能为int 因此内部会进行相关的double->int的转换
+class BinaryLayout extends TreemapLayout {
+  BinaryLayout(super.data, super.width, super.height);
+
+  @override
+  List<TreeNode> layout(double left, double top, double right, double bottom) {
+    if (data.childrenList.length <= 1) {
+      return super.layout(left, top, right, bottom);
+    }
+    List<BinaryNode> list = _buildBinaryTree();
+    List<TreeNode> treeNodeList = [];
+    for (var element in list) {
+      TreeNode treeNode = TreeNode(element.data, 1);
+      treeNode.rect = element.rect;
+      treeNodeList.add(treeNode);
+    }
+    return treeNodeList;
+  }
+
+  //构建树
+  List<BinaryNode> _buildBinaryTree() {
+    List<BinaryNode> nodeList = [];
+    for (var element in data.childrenList) {
+      BinaryNode node = BinaryNode(element);
+      nodeList.add(node);
+    }
+    List<int> sumList = [0];
+    for (var element in nodeList) {
+      sumList.add(element.data.data.toInt() + sumList.last);
+    }
+    partition(sumList, nodeList, 0, nodeList.length, data.data.toInt(), 0, 0, width, height);
+    return nodeList;
+  }
+
+  void partition(
+    List<int> sums,
+    List<BinaryNode> nodes,
+    int start,
+    int end,
+    int value,
+    double x0,
+    double y0,
+    double x1,
+    double y1,
+  ) {
+    //无法再分割直接返回
+    if (start >= end - 1) {
+      BinaryNode node = nodes[start];
+      node.rect = Rect.fromLTRB(x0, y0, x1, y1);
+      return;
+    }
+
+    int valueOffset = sums[start];
+    double valueTarget = (value / 2) + valueOffset;
+    int k = start + 1;
+    int hi = end - 1;
+
+    while (k < hi) {
+      int mid = k + hi >>> 1;
+      if (sums[mid] < valueTarget) {
+        k = mid + 1;
+      } else {
+        hi = mid;
+      }
+    }
+
+    if ((valueTarget - sums[k - 1]) < (sums[k] - valueTarget) && start + 1 < k) {
+      --k;
+    }
+
+    int valueLeft = sums[k] - valueOffset;
+    int valueRight = value - valueLeft;
+
+    if ((x1 - x0) > (y1 - y0)) {
+      //宽矩形水平分割
+      var xk = (x0 * valueRight + x1 * valueLeft) / value;
+      partition(sums, nodes, start, k, valueLeft, x0, y0, xk, y1);
+      partition(sums, nodes, k, end, valueRight, xk, y0, x1, y1);
+    } else {
+      // 高矩形垂直分割
+      var yk = (y0 * valueRight + y1 * valueLeft) / value;
+      partition(sums, nodes, start, k, valueLeft, x0, y0, x1, yk);
+      partition(sums, nodes, k, end, valueRight, x0, yk, x1, y1);
+    }
+  }
+}
+
+class DiceLayout extends TreemapLayout {
+  DiceLayout(super.data, super.width, super.height);
+
+  @override
+  List<TreeNode> layout(double left, double top, double right, double bottom) {
+    if (data.childrenList.length <= 1) {
+      return super.layout(left, top, right, bottom);
+    }
+    List<TreeNode> nodeList = _convertDataToNode(width, height, data.childrenList);
+    double leftOffset = 0;
+    for (var element in nodeList) {
+      Rect rect = Rect.fromLTWH(leftOffset, 0, width * element.areaPercent, height);
+      leftOffset += rect.width;
+      element.rect = rect;
+    }
+    return nodeList;
+  }
+}
+
+class SliceLayout extends TreemapLayout {
+  SliceLayout(super.data, super.width, super.height);
+
+  @override
+  List<TreeNode> layout(double left, double top, double right, double bottom) {
+    if (data.childrenList.length <= 1) {
+      return super.layout(left, top, right, bottom);
+    }
+
+    List<TreeNode> nodeList = _convertDataToNode(width, height, data.childrenList);
+    double topOffset = 0;
+    for (var element in nodeList) {
+      Rect rect = Rect.fromLTWH(0, topOffset, width, height * element.areaPercent);
+      topOffset += rect.height;
+      element.rect = rect;
+    }
+    return nodeList;
+  }
+}
+
+class SliceDiceLayout extends TreemapLayout {
+  final int deepLevel; //深度
+  SliceDiceLayout(
+    super.data,
+    super.width,
+    super.height,
+    this.deepLevel,
+  );
+
+  @override
+  List<TreeNode> layout(double left, double top, double right, double bottom) {
+    if (deepLevel % 2 == 0) {
+      return DiceLayout(data, width, height).layout(left, top, right, bottom);
+    } else {
+      return SliceLayout(data, width, height).layout(left, top, right, bottom);
+    }
+  }
+}
+
+class SquareLayout extends TreemapLayout {
+  final bool upToDown; //是否从上往下
+
+  SquareLayout(super.data, super.width, super.height, {this.upToDown = true});
+
+  @override
+  List<TreeNode> layout(double left, double top, double right, double bottom) {
+    if (data.childrenList.length <= 1) {
+      return super.layout(left, top, right, bottom);
+    }
+    List<TreeMapData> dataList = data.childrenList;
     dataList.sort((a, b) {
-      return b.computeChildrenData().compareTo(a.computeChildrenData());
+      return b.data.compareTo(a.data);
     });
+
     // 计算每个矩形需要占据的面积及其百分比
     List<TreeNode> nodeList = _convertDataToNode(width, height, dataList);
     List<TreeNode> resultList = []; //存储结果
@@ -126,8 +247,7 @@ class SquarifiedLayout extends LayoutAlgorithm {
         Optimal optimal = _computeOptimalRadioAndDirection(node.area, remainRect.width, remainRect.height);
         if (optimal.direction == Direction.vertical) {
           // 竖直放置
-          double rectWidth = node.area / remainRect.height;
-          node.rect = Rect.fromLTWH(remainRect.left, remainRect.top, rectWidth, remainRect.height);
+          node.rect = Rect.fromLTWH(remainRect.left, remainRect.top, node.area / remainRect.height, remainRect.height);
           remainRect = Rect.fromLTWH(node.rect.right, remainRect.top, remainRect.width - node.rect.width, remainRect.height);
         } else {
           // 横向放置
@@ -263,16 +383,6 @@ class SquarifiedLayout extends LayoutAlgorithm {
   }
 }
 
-class ResquarifyLayout extends LayoutAlgorithm {
-  ResquarifyLayout(super.data, super.width, super.height);
-
-  @override
-  List<TreeNode> layout(double left, double top, double right, double bottom) {
-    // TODO: implement layout
-    throw UnimplementedError();
-  }
-}
-
 /// 计算给定数据占用的总面积
 double _computeChildrenFillArea(List<TreeNode> list) {
   double area = 0;
@@ -285,7 +395,7 @@ double _computeChildrenFillArea(List<TreeNode> list) {
 double _computeDataSum(List<TreeMapData> dataList, {bool adjustData = true}) {
   double all = 0;
   for (var element in dataList) {
-    all += element.computeChildrenData(adjustData: adjustData);
+    all += element.data;
   }
   return all;
 }
@@ -295,8 +405,9 @@ List<TreeNode> _convertDataToNode(double width, double height, List<TreeMapData>
   List<TreeNode> nodeList = [];
   double area = width * height;
   for (var element in dataList) {
-    TreeNode node = TreeNode(element, element.computeChildrenData() / dataSum);
-    node.area = area * node.areaPercent;
+    double areaPercent = element.data / dataSum;
+    TreeNode node = TreeNode(element, areaPercent);
+    node.area = area * areaPercent;
     nodeList.add(node);
   }
   return nodeList;
