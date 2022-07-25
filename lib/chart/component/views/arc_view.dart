@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:easy_chart/chart/charts/pie/pie_series.dart';
 import 'package:easy_chart/chart/core/chart_view.dart';
 import 'package:easy_chart/chart/options/string_number.dart';
 import 'package:easy_chart/chart/utils/paint_util.dart';
@@ -50,7 +49,6 @@ class ArcView extends View {
     paint.style = fill ? PaintingStyle.fill : PaintingStyle.stroke;
     canvas.translate(centerX, centerY);
     canvas.drawPath(_computeArcPath(), paint);
-    print('绘制：${toString()}');
   }
 
   // 计算路径
@@ -62,31 +60,62 @@ class ArcView extends View {
     double corner = this.corner > radiusDiff / 2 ? radiusDiff / 2 : this.corner;
     double startAngle = this.startAngle - 90 + offsetAngle;
     double sweepAngle = this.sweepAngle;
-
-    double ox1 = or * cos(startAngle * pi / 180);
-    double oy1 = or * sin(startAngle * pi / 180);
-    double ox2 = or * cos((startAngle + sweepAngle) * pi / 180);
-    double oy2 = or * sin((startAngle + sweepAngle) * pi / 180);
-    double iy = ir * sin(startAngle * pi / 180);
-    double ix = ir * cos(startAngle * pi / 180);
-    double ix2 = ir * cos((startAngle + sweepAngle) * pi / 180);
-    double iy2 = ir * sin((startAngle + sweepAngle) * pi / 180);
-
     Path path = Path();
-    if (innerRadius.number <= 0.01) {
+    if (ir <= 0.01) {
+      double ox1 = or * cos(startAngle * pi / 180);
+      double oy1 = or * sin(startAngle * pi / 180);
+      double ox2 = or * cos((startAngle + sweepAngle) * pi / 180);
+      double oy2 = or * sin((startAngle + sweepAngle) * pi / 180);
       path.moveTo(0, 0);
       path.lineTo(ox1, oy1);
       path.arcToPoint(Offset(ox2, oy2), radius: Radius.circular(or), largeArc: false, clockwise: true);
       path.lineTo(0, 0);
       path.close();
-    } else {
+      return path;
+    }
+
+    double iy = ir * sin(startAngle * pi / 180);
+    double ix = ir * cos(startAngle * pi / 180);
+    if (corner <= 0) {
+      double ix2 = ir * cos((startAngle + sweepAngle) * pi / 180);
+      double iy2 = ir * sin((startAngle + sweepAngle) * pi / 180);
+      double ox1 = or * cos(startAngle * pi / 180);
+      double oy1 = or * sin(startAngle * pi / 180);
+      double ox2 = or * cos((startAngle + sweepAngle) * pi / 180);
+      double oy2 = or * sin((startAngle + sweepAngle) * pi / 180);
       path.moveTo(ix, iy);
       path.lineTo(ox1, oy1);
       path.arcToPoint(Offset(ox2, oy2), radius: Radius.circular(or), largeArc: false, clockwise: true);
       path.lineTo(ix2, iy2);
       path.arcToPoint(Offset(ix, iy), radius: Radius.circular(ir), largeArc: false, clockwise: false);
       path.close();
+      return path;
     }
+
+    List<Offset> offsetList = _computeLeftTopPosition(or, corner);
+    Offset p1 = offsetList[0];
+    Offset p2 = offsetList[1];
+    path.moveTo(ix, iy);
+    path.lineTo(p1.dx, p1.dy);
+    path.arcToPoint(p2, radius: Radius.circular(corner), largeArc: false, clockwise: true);
+
+    offsetList = _computeRightTopPosition(or, corner);
+    p1 = offsetList[0];
+    p2 = offsetList[1];
+    path.arcToPoint(p1, radius: Radius.circular(or), largeArc: false, clockwise: true);
+    path.arcToPoint(p2, radius: Radius.circular(corner), largeArc: false, clockwise: true);
+
+    offsetList = _computeRightBottomPosition(ir, corner);
+    p1 = offsetList[0];
+    p2 = offsetList[1];
+    path.lineTo(p1.dx, p1.dy);
+    path.arcToPoint(p2, radius: Radius.circular(corner), largeArc: false, clockwise: true);
+    offsetList = _computeLeftBottomPosition(ir, corner);
+    p1 = offsetList[0];
+    p2 = offsetList[1];
+    path.arcToPoint(p1, radius: Radius.circular(ir), largeArc: false, clockwise: false);
+    path.arcToPoint(p2, radius: Radius.circular(corner), largeArc: false, clockwise: true);
+    path.close();
     return path;
   }
 
@@ -96,23 +125,79 @@ class ArcView extends View {
   }
 
   //计算圆弧左上顶角当有圆角时的外部半径坐标
-  List<Offset> _computeLeftTopPosition(double innerRadius, double outRadius, double startAngle, double corner) {
+  List<Offset> _computeLeftTopPosition(double outRadius, double corner) {
     const double tmp = pi / 180.0;
-    double ratio = corner / (outRadius - corner);
-    double ox = ratio * corner / (ratio + 1);
-    double xe = sqrt(ox * ox + corner * corner);
-    double xo = xe / ratio;
-    double cox = acos((outRadius - corner) / xo) * (180 / pi);
-    double eob = tmp * (90 - cox - startAngle);
-    double ex = outRadius * cos(eob);
-    double ey = outRadius * sin(eob);
+    double pe = (corner * corner) / (outRadius - corner);
+    double anglePCE = asin(pe / corner) * 180 / pi;
+    double py = -(outRadius - corner) * sin((90 - anglePCE) * tmp);
+    double px = (outRadius - corner) * cos((90 - anglePCE) * tmp);
+    double by = py;
+    double bx = px - corner;
+    double cx = outRadius * sin(pe / corner);
+    double cy = -outRadius * cos(pe / corner);
 
-    //计算圆心坐标
-    double tmp2 = startAngle * tmp;
-    double cx = innerRadius * sin(tmp2);
-    double cy = innerRadius * cos(tmp2);
-    double o1x = cx + corner * cos(tmp2);
-    double o1y = cy + corner * sin(tmp2);
-    return [Offset(o1x, o1y), Offset(ex, ey)];
+    ///调整偏移量
+    double startAngle = this.startAngle + offsetAngle;
+    bx = -by * sin(startAngle * pi / 180);
+    by = by * cos(startAngle * pi / 180);
+    cx = outRadius * sin((startAngle + anglePCE) * tmp);
+    cy = -outRadius * cos((startAngle + anglePCE) * tmp);
+    return [Offset(bx, by), Offset(cx, cy)];
+  }
+
+  //计算圆弧右上顶角当有圆角时的外部半径坐标
+  List<Offset> _computeRightTopPosition(double outRadius, double corner) {
+    const double tmp = pi / 180.0;
+
+    double tmpRadius = outRadius - corner;
+    double angleCorner = asin(corner / tmpRadius) * 180 / pi; //夹角度数
+    double oc = tmpRadius * cos(angleCorner * tmp);
+
+    double endAngle = startAngle + offsetAngle + sweepAngle;
+
+    double bx = outRadius * sin((endAngle - angleCorner) * tmp);
+    double by = -outRadius * cos((endAngle - angleCorner) * tmp);
+
+    double cx = oc * sin(endAngle * tmp);
+    double cy = -oc * cos(endAngle * tmp);
+
+    return [Offset(bx, by), Offset(cx, cy)];
+  }
+
+  ///计算圆弧左下顶角当有圆角时的外部半径坐标
+  List<Offset> _computeLeftBottomPosition(double innerRadius, double corner) {
+    const double tmp = pi / 180.0;
+    double op = innerRadius + corner;
+    double eb = corner * innerRadius / op;
+    double angleEOB = asin(eb / innerRadius) * 180 / pi;
+    double startAngle = this.startAngle + offsetAngle;
+
+    double bx = innerRadius * sin((startAngle + angleEOB) * tmp);
+    double by = -innerRadius * cos((startAngle + angleEOB) * tmp);
+
+    double oc = op * cos(angleEOB * tmp);
+    double cx = oc * sin(startAngle * tmp);
+    double cy = -op * cos(startAngle * tmp);
+
+    return [Offset(bx, by), Offset(cx, cy)];
+  }
+
+  List<Offset> _computeRightBottomPosition(double innerRadius, double corner) {
+    const double tmp = pi / 180.0;
+    double op = innerRadius + corner;
+    double ec = corner * innerRadius / op;
+    double angleEOC = (asin(ec / innerRadius) * 180 / pi);
+    double ob = op * cos(angleEOC * tmp);
+
+    double endAngle = startAngle + sweepAngle + offsetAngle;
+    double angleOPB = (endAngle - angleEOC) * tmp;
+
+    double cx = innerRadius * sin(angleOPB);
+    double cy = -innerRadius * cos(angleOPB);
+
+    double bx = ob * sin(endAngle * tmp);
+    double by = -ob * cos(endAngle * tmp);
+
+    return [Offset(bx, by), Offset(cx, cy)];
   }
 }

@@ -39,7 +39,7 @@ class BarLineChartView extends ViewGroup {
     } else {
       _layoutForValue();
     }
-    _testTreeMap();
+    _testPie();
   }
 
   //TODO 测试
@@ -127,13 +127,8 @@ class BarLineChartView extends ViewGroup {
     list.add(PieData(40, const ItemStyle(BoxDecoration(), color: Colors.lime)));
     list.add(PieData(50, const ItemStyle(BoxDecoration(), color: Colors.orange)));
 
-    PieSeries series = PieSeries(
-      const [SNumber(30, true), SNumber(20, true)],
-      list,
-      roseType: RoseType.normal,
-      corner: 2,
-      animatorStyle: PieAnimatorStyle.expandScale,
-    );
+    PieSeries series = PieSeries(const [SNumber(30, true), SNumber(20, true)], list,
+        roseType: RoseType.area, corner: 0, animatorStyle: PieAnimatorStyle.expandScale, offsetAngle: 0);
     PieChartView pieChartView = PieChartView(series);
     pieChartView.layout(0, 0, width, height);
     addView(pieChartView);

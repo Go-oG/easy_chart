@@ -21,7 +21,7 @@ class PieSeries {
   PieSeries(
     this.center,
     this.dataList, {
-    this.innerRadius = const SNumber.percent(10),
+    this.innerRadius = const SNumber.percent(20),
     this.outerRadius = const SNumber.percent(80),
     this.offsetAngle = 0,
     this.corner = 0,
